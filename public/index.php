@@ -13,3 +13,7 @@
 
 include_once '../vendor/autoload.php';
 
+$obj = new \Bridge\Components\Exporter\StringUtility();
+
+var_dump($obj->toUnderScoreCase(' LISMAN  tua sIhotang '));
+
