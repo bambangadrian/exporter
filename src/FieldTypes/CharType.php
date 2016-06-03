@@ -30,9 +30,9 @@ class CharType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldType
      * @param mixed $fieldLength  Field type length parameter.
      * @param mixed $defaultValue Field type default value parameter.
      */
-    public function __construct($fieldLength = null, $defaultValue = null)
+    public function __construct($fieldLength = 11, $defaultValue = null)
     {
-        $this->setTypeName('boolean');
+        $this->setTypeName('char');
         parent::__construct($fieldLength, $defaultValue);
     }
 
@@ -45,8 +45,7 @@ class CharType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldType
      */
     public function validateConstraint($value)
     {
-        # TODO: Implement validateConstraint() method.
-        return true;
+        return strlen($value) <= $this->getFieldLength();
     }
 
     /**
@@ -58,7 +57,6 @@ class CharType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldType
      */
     protected function validateFieldLength($fieldLength)
     {
-        # TODO: Implement validateFieldLength() method.
-        return true;
+        return $this->isInteger($fieldLength);
     }
 }

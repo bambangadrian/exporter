@@ -32,6 +32,13 @@ abstract class AbstractEntityBuilder implements \Bridge\Components\Exporter\Cont
     protected $DataSource;
 
     /**
+     * Data source type property.
+     *
+     * @var string $DataSourceType
+     */
+    protected $DataSourceType;
+
+    /**
      * Data source entity collection property.
      *
      * @var array $Entities
@@ -53,6 +60,16 @@ abstract class AbstractEntityBuilder implements \Bridge\Components\Exporter\Cont
     protected $FieldMapper = [];
 
     /**
+     * List of valid data source for entity builder.
+     *
+     * @var array $ValidDataSource
+     */
+    protected static $ValidDataSource = [
+        'excel'    => '\Bridge\Components\Exporter\ExcelDataSource',
+        'database' => '\Bridge\Components\Exporter\DbDataSource'
+    ];
+
+    /**
      * AbstractEntityBuilder constructor.
      *
      * @param \Bridge\Components\Exporter\Contracts\DataSourceInterface $dataSource Data source instance parameter.
@@ -66,6 +83,7 @@ abstract class AbstractEntityBuilder implements \Bridge\Components\Exporter\Cont
             $this->DataSource = $dataSource;
             $this->getDataSourceObject()->doLoad();
             $this->EntitiesData = $this->getDataSourceObject()->getData();
+            $this->fetchDataSourceType();
         } catch (\Exception $ex) {
             throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
         }
@@ -79,6 +97,16 @@ abstract class AbstractEntityBuilder implements \Bridge\Components\Exporter\Cont
     public function getDataSourceObject()
     {
         return $this->DataSource;
+    }
+
+    /**
+     * Get data source type property.
+     *
+     * @return string
+     */
+    public function getDataSourceType()
+    {
+        return $this->DataSourceType;
     }
 
     /**
@@ -221,5 +249,19 @@ abstract class AbstractEntityBuilder implements \Bridge\Components\Exporter\Cont
             throw new \Bridge\Components\Exporter\ExporterException('Invalid field mapper array data given');
         }
         return true;
+    }
+
+    /**
+     * Fetch data source type from valid data source array property.
+     *
+     * @return void
+     */
+    private function fetchDataSourceType()
+    {
+        foreach (static::$ValidDataSource as $dataSourceType => $validDataSource) {
+            if ($this->getDataSourceObject() instanceof $validDataSource) {
+                $this->DataSourceType = $dataSourceType;
+            }
+        }
     }
 }

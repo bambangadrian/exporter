@@ -84,9 +84,12 @@ class DataMapper implements \Bridge\Components\Exporter\Contracts\MapperInterfac
         $mappedData = $this->Result;
         if (count($fieldFilters) > 0) {
             foreach ($mappedData as $rowNumber => $rowData) {
-                foreach ($rowData as $field) {
-                    if (array_key_exists($field, $rowData) === true) {
-                        unset($mappedData[$rowNumber][$field]);
+                # Get all field keys for each row.
+                $fieldNames = array_keys($rowData);
+                foreach ($fieldNames as $fieldName) {
+                    # Filter the field.
+                    if (in_array($fieldName, $fieldFilters, true) === false) {
+                        unset($mappedData[$rowNumber][$fieldName]);
                     }
                 }
             }
@@ -206,6 +209,8 @@ class DataMapper implements \Bridge\Components\Exporter\Contracts\MapperInterfac
      *
      * @param array $dataMapperResult Data mapper result parameter.
      *
+     * @throws \Bridge\Components\Exporter\ExporterException If invalid constraint check on mapper result data detected.
+     *
      * @return boolean
      */
     private function validateDataConstraint(array $dataMapperResult)
@@ -215,7 +220,9 @@ class DataMapper implements \Bridge\Components\Exporter\Contracts\MapperInterfac
                 foreach ((array)$rows as $field => $value) {
                     $fieldObj = $this->getSourceEntityObject()->getField($field);
                     if ($fieldObj->getFieldTypeObject()->validateConstraint($value) === false) {
-                        return false;
+                        throw new \Bridge\Components\Exporter\ExporterException(
+                            'Invalid constraint check on mapper result data detected: ' . $value
+                        );
                     }
                 }
             }

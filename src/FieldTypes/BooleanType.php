@@ -37,6 +37,18 @@ class BooleanType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldTy
     }
 
     /**
+     * Format the value that passed by the type algorithm.
+     *
+     * @param mixed $value Value that want to be formatted.
+     *
+     * @return mixed
+     */
+    public function doFormat($value)
+    {
+        return (boolean)$value;
+    }
+
+    /**
      * Do validate the entity using the given constraint.
      *
      * @param mixed $value Value that will validate by the constraint data that has been provided.
@@ -45,8 +57,7 @@ class BooleanType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldTy
      */
     public function validateConstraint($value)
     {
-        # TODO: Implement validateConstraint() method.
-        return true;
+        return is_bool($value) === true;
     }
 
     /**
@@ -58,7 +69,6 @@ class BooleanType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldTy
      */
     protected function validateFieldLength($fieldLength)
     {
-        # TODO: Implement validateFieldLength() method.
-        return true;
+        return $fieldLength === null;
     }
 }

@@ -29,10 +29,11 @@ try {
     # Set the field type mapper to constraint entity builder.
     $constraintBuilder->setFieldMapper($fieldMapper);
     $fieldTypeMapper = [
-        'string' => 'Character',
-        'number' => 'Numeric',
-        'enum'   => 'Enumeration',
-        'date'   => 'Date'
+        'string'  => 'Character',
+        'number'  => 'Numeric',
+        'enum'    => 'Enumeration',
+        'date'    => 'Date',
+        'boolean' => 'Boolean'
     ];
     $constraintBuilder->setFieldTypeMapper($fieldTypeMapper);
     # Build the constraint entities.

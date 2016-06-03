@@ -54,7 +54,21 @@ abstract class AbstractFieldType implements \Bridge\Components\Exporter\Contract
     public function __construct($fieldLength = null, $defaultValue = null)
     {
         $this->setFieldLength($fieldLength);
-        $this->setDefaultValue($defaultValue);
+        if ($defaultValue !== null) {
+            $this->setDefaultValue($defaultValue);
+        }
+    }
+
+    /**
+     * Format the value that passed by the type algorithm.
+     *
+     * @param mixed $value Value that want to be formatted.
+     *
+     * @return mixed
+     */
+    public function doFormat($value)
+    {
+        return $value;
     }
 
     /**
@@ -105,6 +119,18 @@ abstract class AbstractFieldType implements \Bridge\Components\Exporter\Contract
         } catch (\Exception $ex) {
             throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
         }
+    }
+
+    /**
+     * Check if value is an integer type.
+     *
+     * @param mixed $value Value that want to be checked.
+     *
+     * @return boolean
+     */
+    protected function isInteger($value)
+    {
+        return is_numeric($value) and (string)(integer)$value === (string)$value;
     }
 
     /**

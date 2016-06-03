@@ -32,7 +32,7 @@ class StringType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldTyp
      */
     public function __construct($fieldLength = null, $defaultValue = null)
     {
-        $this->setTypeName('boolean');
+        $this->setTypeName('string');
         parent::__construct($fieldLength, $defaultValue);
     }
 
@@ -45,8 +45,7 @@ class StringType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldTyp
      */
     public function validateConstraint($value)
     {
-        # TODO: Implement validateConstraint() method.
-        return true;
+        return strlen($value) <= $this->getFieldLength();
     }
 
     /**
@@ -58,7 +57,6 @@ class StringType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldTyp
      */
     protected function validateFieldLength($fieldLength)
     {
-        # TODO: Implement validateFieldLength() method.
-        return true;
+        return $this->isInteger($fieldLength);
     }
 }

@@ -25,6 +25,15 @@ interface ConstraintInterface
 {
 
     /**
+     * Format the value that passed by the type algorithm.
+     *
+     * @param mixed $value Value that want to be formatted.
+     *
+     * @return mixed
+     */
+    public function doFormat($value);
+
+    /**
      * Do validate the entity using the given constraint.
      *
      * @param mixed $value Value that will validate by the constraint data that has been provided.

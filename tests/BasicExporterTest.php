@@ -10,4 +10,9 @@
  * @version   GIT: $Id$
  * @link      http://www.invosa.com
  */
- 
+include_once 'DataMapperTest.php';
+try {
+    debug($matcherResult);
+} catch (\Exception $ex) {
+    throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
+}

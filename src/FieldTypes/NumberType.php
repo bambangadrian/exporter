@@ -25,6 +25,20 @@ class NumberType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldTyp
 {
 
     /**
+     * Base decimal place length property
+     *
+     * @var integer $DecimalLength
+     */
+    private $DecimalLength = 11;
+
+    /**
+     * Number precision length property.
+     *
+     * @var integer $PrecisionLength .
+     */
+    private $PrecisionLength = 0;
+
+    /**
      * NumberType constructor.
      *
      * @param mixed $fieldLength  Field type length parameter.
@@ -32,8 +46,30 @@ class NumberType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldTyp
      */
     public function __construct($fieldLength = null, $defaultValue = null)
     {
-        $this->setTypeName('boolean');
+        $this->setTypeName('number');
         parent::__construct($fieldLength, $defaultValue);
+    }
+
+    /**
+     * Set the field type length property.
+     *
+     * @param mixed $fieldLength Field type length parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If invalid field length given.
+     *
+     * @return void
+     */
+    public function setFieldLength($fieldLength)
+    {
+        try {
+            parent::setFieldLength($fieldLength);
+            if (is_array($fieldLength) === true) {
+                $this->DecimalLength = $fieldLength[0];
+                $this->PrecisionLength = $fieldLength[1];
+            }
+        } catch (\Exception $ex) {
+            throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
+        }
     }
 
     /**
@@ -45,8 +81,7 @@ class NumberType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldTyp
      */
     public function validateConstraint($value)
     {
-        # TODO: Implement validateConstraint() method.
-        return true;
+        return is_numeric($value);
     }
 
     /**
@@ -58,7 +93,8 @@ class NumberType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldTyp
      */
     protected function validateFieldLength($fieldLength)
     {
-        # TODO: Implement validateFieldLength() method.
-        return true;
+        return (is_array($fieldLength) === true and count($fieldLength) === 2 and
+            is_int($fieldLength[0]) === true and is_int($fieldLength[1]) === true) or
+        ($this->isInteger($fieldLength) === true);
     }
 }

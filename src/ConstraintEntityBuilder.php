@@ -77,12 +77,20 @@ class ConstraintEntityBuilder extends \Bridge\Components\Exporter\AbstractEntity
                 $entityObj = new \Bridge\Components\Exporter\ConstraintEntity($entityName);
                 $entityObj->setData($entityData);
                 foreach ((array)$entityData as $fieldData) {
+                    $fieldType = $this->getFieldTypeMap($fieldData['fieldType']);
+                    $fieldLength = $fieldData['fieldLength'];
+                    if ($this->getDataSourceType() === 'excel' and $fieldType === 'enum') {
+                        $fieldLength = json_decode(
+                            \Bridge\Components\Exporter\StringUtility::toJson($fieldLength),
+                            true
+                        );
+                    }
                     # Parse the field constraint from entity array.
                     $constraints = [
-                        'required'      => $fieldData['required'],
+                        'required'      => (boolean)$fieldData['required'],
                         'fieldTypeData' => [
-                            'type'   => $this->getFieldTypeMap($fieldData['fieldType']),
-                            'length' => $fieldData['fieldLength']
+                            'type'   => $fieldType,
+                            'length' => $fieldLength
                         ]
                     ];
                     # Create the field element object and assign the field element into the table entity.

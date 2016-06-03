@@ -32,7 +32,7 @@ class DateType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldType
      */
     public function __construct($fieldLength = null, $defaultValue = null)
     {
-        $this->setTypeName('boolean');
+        $this->setTypeName('date');
         parent::__construct($fieldLength, $defaultValue);
     }
 

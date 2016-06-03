@@ -488,6 +488,29 @@ class StringUtility
     }
 
     /**
+     * Build json format from string.
+     *
+     * @param string $str               String data parameter.
+     * @param string $delimiter         Delimiter that separate each record.
+     * @param string $keyValueSeparator Separator character that will be used to fetch the key and the value.
+     *
+     * @return string
+     */
+    public static function toJson($str, $delimiter = ',', $keyValueSeparator = '=')
+    {
+        $data = [];
+        $callbackFunction = function ($arrValue) use ($keyValueSeparator) {
+            $arrValue = explode($keyValueSeparator, trim($arrValue));
+            return [$arrValue[0] => trim($arrValue[1])];
+        };
+        $arrString = array_map($callbackFunction, explode($delimiter, $str));
+        foreach ($arrString as $row) {
+            $data = array_merge($data, $row);
+        }
+        return json_encode($data);
+    }
+
+    /**
      * Convert the given string to pascal case format.
      *
      * @param string $str String data parameter.

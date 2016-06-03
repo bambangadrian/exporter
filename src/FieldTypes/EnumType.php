@@ -32,7 +32,7 @@ class EnumType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldType
      */
     public function __construct($fieldLength = null, $defaultValue = null)
     {
-        $this->setTypeName('boolean');
+        $this->setTypeName('enum');
         parent::__construct($fieldLength, $defaultValue);
     }
 
@@ -45,8 +45,7 @@ class EnumType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldType
      */
     public function validateConstraint($value)
     {
-        # TODO: Implement validateConstraint() method.
-        return true;
+        return in_array($value, $this->getFieldLength(), true);
     }
 
     /**
@@ -58,7 +57,6 @@ class EnumType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldType
      */
     protected function validateFieldLength($fieldLength)
     {
-        # TODO: Implement validateFieldLength() method.
-        return true;
+        return is_array($fieldLength) === true and count($fieldLength) === count($fieldLength, COUNT_RECURSIVE);
     }
 }
