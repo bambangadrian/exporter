@@ -10,4 +10,11 @@
  * @version   GIT: $Id$
  * @link      http://www.invosa.com
  */
- 
+
+include_once 'TestBootstrap.php';
+try {
+    $databaseAdapter = new \Bridge\Components\Database\Adapter\PostgreSqlAdapter();
+
+} catch (\Exception $ex) {
+    throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
+}

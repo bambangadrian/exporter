@@ -12,7 +12,11 @@
  */
 include_once 'DataMapperTest.php';
 try {
-    debug($matcherResult);
+    $postgreSqlDriver = new \Bridge\Components\Database\Adapter\PostgreSqlAdapter();
+    $dbSourceObject = new \Bridge\Components\Exporter\DbDataSource();
+    $dbSourceObject->setDriver($postgreSqlDriver);
+    $dbTableEntityBuilder = new \Bridge\Components\Exporter\TableEntityBuilder($dbSourceObject);
+    $dbSourceObject->doMassImport($matcherResult);
 } catch (\Exception $ex) {
     throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
 }

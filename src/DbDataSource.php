@@ -25,6 +25,13 @@ class DbDataSource implements \Bridge\Components\Exporter\Contracts\DataSourceIn
 {
 
     /**
+     * Database adapter that will be required to open connection to server.
+     *
+     * @var \Bridge\Components\Database\Contracts\DatabaseAdapterInterface $DatabaseAdapter
+     */
+    protected $DatabaseAdapter;
+
+    /**
      * Load the data source and run initial process.
      *
      * @return void
