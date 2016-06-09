@@ -48,13 +48,40 @@ class BasicExcelFile extends \Bridge\Components\Exporter\AbstractExcelFile
     /**
      * Printing the excel document.
      *
-     * @param array $options Option array set to printing mode parameter.
+     * @param array  $options   Option array set to printing mode parameter.
+     * @param string $sheetName Sheet name parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If failed to get page setup or margin instance.
      *
      * @return void
      */
-    public function doPrinting(array $options = [])
+    public function doPrinting(array $options = [], $sheetName = '')
     {
-        # TODO: Implement the doPrinting method.
+        # Configuration that supported only for page setup and margin.
+        if (array_key_exists('setup', $options) === true) {
+            $pageSetupData = $options['setup'];
+            $mapperFunction = [
+                'orientation' => 'setOrientation',
+                'paperSize'   => 'setPaperSize',
+                'fitToWidth'  => 'setFitToWidth',
+                'fitToHeight' => 'setFitToHeight',
+                'scale'       => 'setScale',
+                'printArea'   => 'setPrintArea'
+            ];
+            $pageSetupObject = $this->getPageSetup($sheetName);
+            $this->setupPrinting($pageSetupObject, $mapperFunction, $pageSetupData);
+        }
+        if (array_key_exists('margin', $options) === true) {
+            $pageMarginData = $options['margin'];
+            $mapperFunction = [
+                'top'    => 'setTop',
+                'right'  => 'setRight',
+                'left'   => 'setLeft',
+                'bottom' => 'setBottom'
+            ];
+            $pageMarginObject = $this->getPageMargin($sheetName);
+            $this->setupPrinting($pageMarginObject, $mapperFunction, $pageMarginData);
+        }
         # Applied the options to the excel object.
     }
 
@@ -64,23 +91,18 @@ class BasicExcelFile extends \Bridge\Components\Exporter\AbstractExcelFile
      * @param string $sheetName Sheet name parameter.
      * @param string $gridType  Grid type parameter.
      *
-     * @throws \Bridge\Components\Exporter\ExporterException If invalid worksheet or grid type given.
      * @throws \Bridge\Components\Exporter\ExporterException If cannot get next grid row number.
      *
      * @return integer Returns the next grid row number
      */
     public function getNextGridRow($sheetName = '', $gridType = 'contents')
     {
-        try {
-            if (array_key_exists($sheetName, $this->getGrid()['worksheets']) === false or
-                $this->validateGridType($gridType) === false
-            ) {
-                throw new \Bridge\Components\Exporter\ExporterException('Cannot get next grid row number');
-            }
-            return max(array_keys($this->Grid['worksheets'][$sheetName][$gridType])) + 1;
-        } catch (\Exception $ex) {
-            throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
+        if (array_key_exists($sheetName, $this->getGrid()['worksheets']) === false or
+            $this->validateGridType($gridType) === false
+        ) {
+            throw new \Bridge\Components\Exporter\ExporterException('Cannot get next grid row number');
         }
+        return max(array_keys($this->Grid['worksheets'][$sheetName][$gridType])) + 1;
     }
 
     /**
@@ -112,39 +134,45 @@ class BasicExcelFile extends \Bridge\Components\Exporter\AbstractExcelFile
     /**
      * Get the complete grid as a string.
      *
+     * @throws \Bridge\Components\Exporter\ExporterException Failed to render the grid.
+     *
      * @return void
      */
     protected function doRenderGrid()
     {
-        if (count($this->getGrid()) > 0) {
-            # Remove the default worksheet.
-            $this->getPhpExcelObject()->removeSheetByIndex($this->getSheetIndex());
-            $gridData = $this->getGrid();
-            $gridWorksheet = (array)$gridData['worksheets'];
-            $objPhpExcel = $this->getPhpExcelObject();
-            $worksheetIndex = 0;
-            foreach ($gridWorksheet as $sheetKey => $sheetData) {
-                # Create the worksheet instance.
-                $sheetKeyAsString = $sheetKey;
-                if (is_numeric($sheetKeyAsString) === true) {
-                    $sheetKeyAsString = 'sheet' . $sheetKey;
+        try {
+            if (count($this->getGrid()) > 0) {
+                # Remove the default worksheet.
+                $this->getPhpExcelObject()->removeSheetByIndex($this->getSheetIndex());
+                $gridData = $this->getGrid();
+                $gridWorksheet = (array)$gridData['worksheets'];
+                $objPhpExcel = $this->getPhpExcelObject();
+                $worksheetIndex = 0;
+                foreach ($gridWorksheet as $sheetKey => $sheetData) {
+                    # Create the worksheet instance.
+                    $sheetKeyAsString = $sheetKey;
+                    if (is_numeric($sheetKeyAsString) === true) {
+                        $sheetKeyAsString = 'sheet' . $sheetKey;
+                    }
+                    $objWorksheet = new \PHPExcel_Worksheet($objPhpExcel, $sheetKeyAsString);
+                    # Or you can use $objWorksheet = $this->getPhpExcelObject()->createSheet();
+                    $objWorksheet->setTitle($sheetKeyAsString);
+                    # Attach the worksheet to php excel object.
+                    $objPhpExcel->addSheet($objWorksheet, $worksheetIndex);
+                    $objPhpExcel->setActiveSheetIndex($worksheetIndex);
+                    # Parse all the sheet data to variable.
+                    # Process and render the sheet data.
+                    if (array_key_exists('contents', $sheetData) === true) {
+                        $this->doRenderGridItems($sheetData['contents']);
+                    }
+                    # worksheet index increment to set the active sheet.
+                    $worksheetIndex++;
                 }
-                $objWorksheet = new \PHPExcel_Worksheet($objPhpExcel, $sheetKeyAsString);
-                # Or you can use $objWorksheet = $this->getPhpExcelObject()->createSheet();
-                $objWorksheet->setTitle($sheetKeyAsString);
-                # Attach the worksheet to php excel object.
-                $objPhpExcel->addSheet($objWorksheet, $worksheetIndex);
-                $objPhpExcel->setActiveSheetIndex($worksheetIndex);
-                # Parse all the sheet data to variable.
-                # Process and render the sheet data.
-                if (array_key_exists('contents', $sheetData) === true) {
-                    $this->doRenderGridItems($sheetData['contents']);
-                }
-                # worksheet index increment to set the active sheet.
-                $worksheetIndex++;
+                # Remove all the grid content after rendering the grid.
+                $this->doUnsetGrid();
             }
-            # Remove all the grid content after rendering the grid.
-            $this->doUnsetGrid();
+        } catch (\Exception $ex) {
+            throw new \Bridge\Components\Exporter\ExporterException('Failed to render the grid: ' . $ex->getMessage());
         }
     }
 
@@ -229,6 +257,28 @@ class BasicExcelFile extends \Bridge\Components\Exporter\AbstractExcelFile
         }
         # Return the row data.
         return $rowData;
+    }
+
+    /**
+     * Setup printing option to excel file.
+     *
+     * @param Contracts\ExcelPageElementInterface $pageElementObj Page setup or margin instance.
+     * @param array                               $mapperFunction Mapper function array data that will be called
+     *                                                            runtime dynamically.
+     * @param array                               $optionsData    Printing options data parameter.
+     *
+     * @return void
+     */
+    private function setupPrinting($pageElementObj, array $mapperFunction, array $optionsData)
+    {
+        $callableMethod = array_keys($mapperFunction);
+        foreach ($optionsData as $key => $value) {
+            if (array_key_exists($key, $callableMethod) === true and
+                method_exists($pageElementObj, $mapperFunction[$key])
+            ) {
+                $pageElementObj->{$mapperFunction[$key]}($value);
+            }
+        }
     }
 
     /**

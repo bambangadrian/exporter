@@ -278,22 +278,27 @@ class FieldElement implements \Bridge\Components\Exporter\Contracts\FieldElement
      */
     public function setFieldTypeData(array $fieldTypeData)
     {
+        $fieldTypeDataTemplate = ['type' => null, 'length' => null, 'default' => null];
+        $fieldTypeData = array_merge($fieldTypeDataTemplate, $fieldTypeData);
+        $fieldTypeFactory = new \Bridge\Components\Exporter\FieldTypes\FieldTypesFactory();
         try {
-            $fieldTypeDataTemplate = ['type' => null, 'length' => null, 'default' => null];
-            $fieldTypeData = array_merge($fieldTypeDataTemplate, $fieldTypeData);
-            $fieldTypeFactory = new \Bridge\Components\Exporter\FieldTypes\FieldTypesFactory();
             $fieldTypeObject = $fieldTypeFactory->createType(
                 $fieldTypeData['type'],
                 $fieldTypeData['length'],
                 $fieldTypeData['default']
             );
-            $this->Constraints['fieldTypeData'] = $fieldTypeData;
-            $this->FieldType = $fieldTypeObject;
-            $this->FieldLength = $fieldTypeData['length'];
-            $this->DefaultValue = $fieldTypeData['default'];
         } catch (\Exception $ex) {
-            throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
+            throw new \Bridge\Components\Exporter\ExporterException('Failed to create type: ' . $ex->getMessage());
         }
+        if ($fieldTypeObject instanceof \Bridge\Components\Exporter\FieldTypes\DateType and
+            array_key_exists('format', $fieldTypeData) === true
+        ) {
+            $fieldTypeObject->setDateFormat($fieldTypeData['format']);
+        }
+        $this->Constraints['fieldTypeData'] = $fieldTypeData;
+        $this->FieldType = $fieldTypeObject;
+        $this->FieldLength = $fieldTypeData['length'];
+        $this->DefaultValue = $fieldTypeData['default'];
     }
 
     /**

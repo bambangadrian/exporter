@@ -10,34 +10,24 @@
  * @version   GIT: $Id$
  * @link      -
  */
-namespace Bridge\Components\Exporter;
+namespace Bridge\Components\Exporter\Contracts;
 
 /**
- * AdvancedDataSource class description.
+ * ExcelPageElementInterface class description.
  *
  * @package    Components
- * @subpackage Exporter
+ * @subpackage Exporter\Contracts
  * @author     Bambang Adrian Sitompul <bambang.adrian@gmail.com>
  * @copyright  2016 -
  * @release    $Revision$
  */
-class AdvancedDataSource extends \Bridge\Components\Exporter\AbstractDataSourceDecorator
+interface ExcelPageElementInterface
 {
 
     /**
-     * Convert set data property
+     * Get printing option name property.
      *
-     * @var array $ConverterSet
+     * @return string
      */
-    private $ConverterSet;
-
-    /**
-     * Get the converter set data property.
-     *
-     * @return array
-     */
-    public function getConverterSet()
-    {
-        return $this->ConverterSet;
-    }
+    public function getPrintingOptionName();
 }

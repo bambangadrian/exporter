@@ -16,8 +16,9 @@ try {
     $constraintDataSource = new \Bridge\Components\Exporter\ExcelDataSource(
         '../resources/files/Constraints/MasterData.xlsx'
     );
-    //$dataSource->doLoad();
-    //debug($dataSource->getData(['hrd_company']), true);
+    //$constraintDataSource->doLoad();
+    //debug($constraintDataSource->getData(['hrd_company']));
+    //debug($constraintDataSource->getFields(), false);
     # Use decorator to format to standard data source.
     $baseDataSource = new \Bridge\Components\Exporter\StandardDataSource($constraintDataSource);
     # Mock-up for entities builder.

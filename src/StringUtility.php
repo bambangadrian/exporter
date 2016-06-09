@@ -484,7 +484,13 @@ class StringUtility
     public static function toCamelCase($str)
     {
         # Sample: Bambang Adrian Sitompul : bambangAdrianSitompul
-        # TODO: Implement the toCamelCase method.
+        $arrString = explode(' ', strtolower($str));
+        $resString[] = $arrString[0];
+        $count = count($arrString);
+        for ($i = 1; $i < $count; $i++) {
+            $resString[] = ucfirst($arrString[$i]);
+        }
+        return implode('', $resString);
     }
 
     /**
@@ -499,13 +505,10 @@ class StringUtility
     public static function toJson($str, $delimiter = ',', $keyValueSeparator = '=')
     {
         $data = [];
-        $callbackFunction = function ($arrValue) use ($keyValueSeparator) {
-            $arrValue = explode($keyValueSeparator, trim($arrValue));
-            return [$arrValue[0] => trim($arrValue[1])];
-        };
-        $arrString = array_map($callbackFunction, explode($delimiter, $str));
-        foreach ($arrString as $row) {
-            $data = array_merge($data, $row);
+        $arrString = explode($delimiter, $str);
+        foreach ($arrString as $item) {
+            $arrItem = explode($keyValueSeparator, trim($item));
+            $data[trim($arrItem[0])] = trim($arrItem[1]);
         }
         return json_encode($data);
     }
@@ -520,8 +523,7 @@ class StringUtility
     public static function toPascalCase($str)
     {
         # Sample: Bambang Adrian Sitompul : BambangAdrianSitompul
-        # Sample: bambang adrian sitompul : BambangAdrianSitompul
-        # TODO: Implement the toPascalCase method.
+        return str_replace(' ', '', ucwords(strtolower($str)));
     }
 
     /**
@@ -534,7 +536,7 @@ class StringUtility
     public static function toUnderScoreCase($str)
     {
         # Sample: Bambang Adrian Sitompul : bambang_adrian_sitompul
-        # TODO: Implement the toUnderScoreCase method.
+        return str_replace(' ', '_', ltrim(rtrim(strtolower($str))));
     }
 
     /**
@@ -548,7 +550,7 @@ class StringUtility
      */
     public static function toUriFriendly($str, array $replace = [], $delimiter = '-')
     {
-        if (!empty($replace)) {
+        if (count($replace) !== 0) {
             $str = str_replace((array)$replace, ' ', $str);
         }
         $clean = static::replaceAccent($str);

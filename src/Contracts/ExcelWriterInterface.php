@@ -46,7 +46,7 @@ interface ExcelWriterInterface
      *
      * @throws \PHPExcel_Reader_Exception If no search type found for the writer type.
      * @throws \PHPExcel_Writer_Exception If fail to save the file to the location path.
-     * @throws \Bridge\Components\Exporter\ExporterException If catch any general exception or error.
+     * @throws \Bridge\Components\Exporter\ExporterException If failed to set mode or set reader and writer type.
      *
      * @return void
      */

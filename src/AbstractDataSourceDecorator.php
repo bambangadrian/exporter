@@ -32,13 +32,6 @@ abstract class AbstractDataSourceDecorator implements \Bridge\Components\Exporte
     protected $DataSourceInstance;
 
     /**
-     * Data set property that contains all the entity/record data.
-     *
-     * @var array $DataSet
-     */
-    private $DataSet;
-
-    /**
      * AbstractDataSourceDecorator constructor.
      *
      * @param \Bridge\Components\Exporter\Contracts\DataSourceInterface $dataSource Data source instance parameter.
@@ -73,32 +66,24 @@ abstract class AbstractDataSourceDecorator implements \Bridge\Components\Exporte
     /**
      * Get resource data.
      *
-     * @param array $fieldFilters Array field filters data parameter.
+     * @param array $entityFilter Selected entity collection that will be parsed.
      *
      * @return array
      */
-    public function getData(array $fieldFilters = [])
+    public function getData(array $entityFilter = [])
     {
-        return $this->DataSourceInstance->getData($fieldFilters);
-    }
-
-    /**
-     * Get data set property.
-     *
-     * @return array
-     */
-    public function getDataSet()
-    {
-        return $this->DataSet;
+        return $this->DataSourceInstance->getData($entityFilter);
     }
 
     /**
      * Get field lists from data source.
      *
+     * @param string $entityName Selected entity name that will be fetch the field column list.
+     *
      * @return array
      */
-    public function getFields()
+    public function getFields($entityName = '')
     {
-        return $this->DataSourceInstance->getFields();
+        return $this->DataSourceInstance->getFields($entityName);
     }
 }

@@ -68,28 +68,27 @@ class TableEntityBuilder extends \Bridge\Components\Exporter\AbstractEntityBuild
      */
     public function doBuild()
     {
-        # Run the build entities procedure.
-        try {
-            # Load and validate the data source and
-            $this->doLoad();
-            # Get the entities data.
-            $entitiesData = $this->getEntitiesData();
-            # Initialize the entity object content.
-            $entityCollection = [];
-            $dataSourceFields = $this->getDataSourceObject()->getFields();
-            # Get the field constraint mapper.
-            $fieldConstraintMapper = $this->getFieldConstraintMapper();
-            foreach ($entitiesData as $entityName => $entityData) {
-                # Create a table source as the data source for entity.
-                $constraintEntityObj = $this->getConstraint($entityName);
-                $entityObj = new \Bridge\Components\Exporter\TableEntity($entityName, $constraintEntityObj);
-                # Set the fields into entity.
-                $fields = (array)$dataSourceFields[$entityName];
-                # Get the specific entity field constraint mapper.
-                $fieldConstraintMapperData = [];
-                if (array_key_exists($entityName, $fieldConstraintMapper) === true) {
-                    $fieldConstraintMapperData = $fieldConstraintMapper[$entityName];
-                }
+        # Load and validate the data source and
+        $this->doLoad();
+        # Get the entities data.
+        $entitiesData = $this->getEntitiesData();
+        # Initialize the entity object content.
+        $entityCollection = [];
+        $dataSourceFields = $this->getDataSourceObject()->getFields();
+        # Get the field constraint mapper.
+        $fieldConstraintMapper = $this->getFieldConstraintMapper();
+        foreach ($entitiesData as $entityName => $entityData) {
+            # Create a table source as the data source for entity.
+            $constraintEntityObj = $this->getConstraint($entityName);
+            $entityObj = new \Bridge\Components\Exporter\TableEntity($entityName, $constraintEntityObj);
+            # Set the fields into entity.
+            $fields = (array)$dataSourceFields[$entityName];
+            # Get the specific entity field constraint mapper.
+            $fieldConstraintMapperData = [];
+            if (array_key_exists($entityName, $fieldConstraintMapper) === true) {
+                $fieldConstraintMapperData = $fieldConstraintMapper[$entityName];
+            }
+            try {
                 foreach ($fields as $field) {
                     $fieldObj = new \Bridge\Components\Exporter\FieldElement($field);
                     if (count($fieldConstraintMapperData) > 0 and
@@ -99,14 +98,15 @@ class TableEntityBuilder extends \Bridge\Components\Exporter\AbstractEntityBuild
                     }
                     $entityObj->addField($fieldObj);
                 }
-                $entityObj->setData($entityData);
-                # Add the entity object to the collection.
-                $entityCollection[$entityName] = $entityObj;
+            } catch (\Exception $ex) {
+                throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
             }
-            $this->Entities = $entityCollection;
-        } catch (\Exception $ex) {
-            throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
+            $entityObj->setData($entityData);
+            # Add the entity object to the collection.
+            $entityCollection[$entityName] = $entityObj;
         }
+        $this->Entities = $entityCollection;
+        # Run the build entities procedure.
     }
 
     /**

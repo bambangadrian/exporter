@@ -143,6 +143,8 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
      * ExcelFile constructor.
      *
      * @param string $filePath Excel file path parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If error raised when set file path property.
      */
     public function __construct($filePath)
     {
@@ -157,12 +159,18 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
      * @param string $destination The destination file save.
      * @param string $convertTo   The type of excel writer as the destination type after conversion.
      *
+     * @throws \Bridge\Components\Exporter\ExporterException If failed to convert.
+     *
      * @return void
      */
     public function doConvertTo($filePath, $destination, $convertTo)
     {
-        $this->PhpExcel = \PHPExcel_IOFactory::load($filePath);
-        $this->doSave($destination, $convertTo);
+        try {
+            $this->PhpExcel = \PHPExcel_IOFactory::load($filePath);
+            $this->doSave($destination, $convertTo);
+        } catch (\Exception $ex) {
+            throw new \Bridge\Components\Exporter\ExporterException('Failed to convert: ' . $ex->getMessage());
+        }
     }
 
     /**
@@ -172,6 +180,7 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
      * @param string $writerType Excel writer type that will be applied into php excel writer instance.
      *
      * @throws \Bridge\Components\Exporter\ExporterException If content type of given writer set is not found.
+     * @throw  \Bridge\Components\Exporter\ExporterException If failed to save into php output.
      *
      * @return void
      */
@@ -202,7 +211,13 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
         # Use HTTP/1.1
         header('Cache-Control: cache, must-revalidate');
         header('Pragma: public');
-        $this->doSave('php://output', $writerType);
+        try {
+            $this->doSave('php://output', $writerType);
+        } catch (\Exception $ex) {
+            throw new \Bridge\Components\Exporter\ExporterException(
+                'Failed to save into php output: ' . $ex->getMessage()
+            );
+        }
     }
 
     /**
@@ -213,7 +228,12 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
      *                                                                                   parameter.
      * @param string                                                         $readerType Excel reader type parameter.
      *
-     * @throws \PHPExcel_Reader_Exception If invalid reader type or the file cannot be loaded.
+     * @throws \Bridge\Components\Exporter\ExporterException If failed to set mode.
+     * If reader and writer type that given is not supported.
+     * If If failed to load the reader object.
+     * If invalid column string name.
+     * If no cells exist within the specified range.
+     *
      * @return void
      */
     public function doRead(
@@ -221,46 +241,52 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
         array $sheetNames = [],
         $readerType = 'Excel2007'
     ) {
+        $this->setMode('read');
+        $this->setLoadedSheets($sheetNames);
+        $this->setReaderAndWriterType($readerType);
+        if ($readFilter !== null) {
+            $this->setReadFilter($readFilter);
+        }
         try {
-            $this->setMode('read');
-            $this->setLoadedSheets($sheetNames);
-            $this->setReaderAndWriterType($readerType);
-            if ($readFilter !== null) {
-                $this->setReadFilter($readFilter);
-            }
             $this->Reader = $this->createReader();
             $this->PhpExcel = $this->Reader->load($this->getFilePath());
-            $workSheetIterator = $this->getPhpExcelObject()->getWorksheetIterator();
-            $gridData = [];
-            foreach ($workSheetIterator as $worksheet) {
-                $worksheetTitle = $worksheet->getTitle();
-                $worksheetData = [];
-                $objWorkSheet = $this->getPhpExcelObject()->setActiveSheetIndexByName($worksheetTitle);
-                $rowIterator = $objWorkSheet->getRowIterator();
-                foreach ($rowIterator as $row) {
-                    $cellIterator = $row->getCellIterator();
-                    $rowIndex = $row->getRowIndex();
-                    $cellIterator->setIterateOnlyExistingCells(false);
-                    $rowData = [];
-                    foreach ($cellIterator as $cell) {
-                        /**
-                         * Convert cell into php excel cell object.
-                         *
-                         * @var \PhpExcel_Cell $objCell
-                         */
-                        $objCell = $cell;
-                        $columnIndex = $this->getColumnIndexFromString($objCell->getColumn());
-                        $rowData['data'][$columnIndex] = $objCell->getValue();
-                    }
-                    $worksheetData['contents'][$rowIndex] = $rowData;
-                }
-                $gridData['worksheets'][$worksheetTitle] = $worksheetData;
-            }
-            $this->Data = $gridData;
-            # Read the excel document using iterator.
         } catch (\PHPExcel_Reader_Exception $ex) {
-            throw new \PHPExcel_Reader_Exception($ex->getMessage());
+            throw new \Bridge\Components\Exporter\ExporterException(
+                'Failed to load the reader object: ' . $ex->getMessage()
+            );
         }
+        $workSheetIterator = $this->getPhpExcelObject()->getWorksheetIterator();
+        $gridData = [];
+        foreach ($workSheetIterator as $worksheet) {
+            $worksheetTitle = $worksheet->getTitle();
+            $worksheetData = [];
+            $objWorkSheet = $this->setActiveSheetIndexByName($worksheetTitle);
+            $rowIterator = $objWorkSheet->getRowIterator();
+            foreach ($rowIterator as $row) {
+                $cellIterator = $row->getCellIterator();
+                $rowIndex = $row->getRowIndex();
+                try {
+                    $cellIterator->setIterateOnlyExistingCells(false);
+                } catch (\PHPExcel_Exception $ex) {
+                    throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
+                }
+                $rowData = [];
+                foreach ($cellIterator as $cell) {
+                    /**
+                     * Convert cell into php excel cell object.
+                     *
+                     * @var \PhpExcel_Cell $objCell
+                     */
+                    $objCell = $cell;
+                    $columnIndex = $this->getColumnIndexFromString($objCell->getColumn());
+                    $rowData['data'][$columnIndex] = $objCell->getValue();
+                }
+                $worksheetData['contents'][$rowIndex] = $rowData;
+            }
+            $gridData['worksheets'][$worksheetTitle] = $worksheetData;
+        }
+        # Set the Data property from grid data.
+        $this->Data = $gridData;
     }
 
     /**
@@ -273,39 +299,47 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
      *
      * @throws \PHPExcel_Reader_Exception If no search type found for the writer type.
      * @throws \PHPExcel_Writer_Exception If fail to save the file to the location path.
-     * @throws \Bridge\Components\Exporter\ExporterException If catch any general exception or error.
+     * @throws \Bridge\Components\Exporter\ExporterException If failed to set mode or set reader and writer type.
      *
      * @return void
      */
     public function doSave($fileName = '', $writerType = 'Excel2007', array $grid = [], array $options = [])
     {
+        if (count($grid) > 0) {
+            $this->setGrid($grid);
+        }
+        if (count($options) > 0) {
+            $this->setWriterOptions($options);
+        }
+        if (trim($fileName) !== '' and $fileName !== null and $this->getFilePath() !== $fileName) {
+            $this->setFilePath($fileName);
+        }
+        # Render the data to excel grid.
+        $this->doRenderGrid();
+        # Set the mode.
+        $this->setMode('write');
+        if ($this->getMode() === 'read') {
+            $this->setMode('update');
+        }
+        # Crete the excel writer object based on the requirement.
+        $this->setReaderAndWriterType($writerType);
+        $this->Writer = $this->createWriter();
+        # Save the excel document.
+        $this->Writer->save($this->getFilePath());
+    }
+
+    /**
+     * Get active sheet object.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If the requested sheet is out of bounds.
+     *
+     * @return \PHPExcel_Worksheet
+     */
+    public function getActiveSheet()
+    {
         try {
-            if (count($grid) > 0) {
-                $this->setGrid($grid);
-            }
-            if (count($options) > 0) {
-                $this->setWriterOptions($options);
-            }
-            if (trim($fileName) !== '' and $fileName !== null and $this->getFilePath() !== $fileName) {
-                $this->setFilePath($fileName);
-            }
-            # Render the data to excel grid.
-            $this->doRenderGrid();
-            # Set the mode.
-            $this->setMode('write');
-            if ($this->getMode() === 'read') {
-                $this->setMode('update');
-            }
-            # Crete the excel writer object based on the requirement.
-            $this->setReaderAndWriterType($writerType);
-            $this->Writer = $this->createWriter();
-            # Save the excel document.
-            $this->Writer->save($this->getFilePath());
-        } catch (\PHPExcel_Reader_Exception $ex) {
-            throw new \PHPExcel_Reader_Exception($ex->getMessage());
-        } catch (\PHPExcel_Writer_Exception $ex) {
-            throw new \PHPExcel_Writer_Exception($ex->getMessage());
-        } catch (\Exception $ex) {
+            return $this->getPhpExcelObject()->getActiveSheet();
+        } catch (\PHPExcel_Exception $ex) {
             throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
         }
     }
@@ -371,6 +405,26 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
     }
 
     /**
+     * Get excel page margin instance.
+     *
+     * @param string $sheetName Sheet name parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If failed to get active sheet object.
+     *
+     * @return \Bridge\Components\Exporter\ExcelFile\ExcelPageMargin
+     */
+    public function getPageMargin($sheetName = '')
+    {
+        try {
+            return $this->getSheet($sheetName)->getPageMargins();
+        } catch (\Exception $ex) {
+            throw new \Bridge\Components\Exporter\ExporterException(
+                'Cannot get page margin instance: ' . $ex->getMessage()
+            );
+        }
+    }
+
+    /**
      * Get the PphExcel document properties.
      *
      * @return \PHPExcel_DocumentProperties
@@ -408,6 +462,24 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
     public function getWriterOptions()
     {
         return $this->WriterOptions;
+    }
+
+    /**
+     * Set active sheet index by name.
+     *
+     * @param string $pValue Sheet title parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If workbook does not contain the sheet.
+     *
+     * @return \PHPExcel_Worksheet
+     */
+    public function setActiveSheetIndexByName($pValue = '')
+    {
+        try {
+            return $this->getPhpExcelObject()->setActiveSheetIndexByName($pValue);
+        } catch (\PHPExcel_Exception $ex) {
+            throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
+        }
     }
 
     /**
@@ -487,35 +559,31 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
      */
     protected function createReader()
     {
-        try {
-            /**
-             * Excel reader instance.
-             *
-             * @var \Bridge\Components\Exporter\Contracts\ExcelReaderInterface|\PHPExcel_Reader_Abstract $objReader
-             */
-            $objReader = \PHPExcel_IOFactory::createReader($this->getReaderAndWriterType());
-            if ($this->getReadFilter() !== null) {
-                $objReader->setReadFilter($this->getReadFilter());
-            }
-            if ($objReader instanceof \PHPExcel_Reader_Abstract) {
-                $objReader->setReadDataOnly(true);
-            }
-            if (count($this->getLoadedSheet()) === 0) {
-                $objReader->setLoadAllSheets();
-            } else {
-                $objReader->setLoadSheetsOnly($this->getLoadedSheet());
-            }
-            return $objReader;
-            # Set the PhpExcel object as the handler of file that want to be loaded.
-        } catch (\PHPExcel_Reader_Exception $ex) {
-            throw new \PHPExcel_Reader_Exception($ex->getMessage());
+        /**
+         * Excel reader instance.
+         *
+         * @var \Bridge\Components\Exporter\Contracts\ExcelReaderInterface|\PHPExcel_Reader_Abstract $objReader
+         */
+        $objReader = \PHPExcel_IOFactory::createReader($this->getReaderAndWriterType());
+        if ($this->getReadFilter() !== null) {
+            $objReader->setReadFilter($this->getReadFilter());
         }
+        if ($objReader instanceof \PHPExcel_Reader_Abstract) {
+            $objReader->setReadDataOnly(true);
+        }
+        if (count($this->getLoadedSheet()) === 0) {
+            $objReader->setLoadAllSheets();
+        } else {
+            $objReader->setLoadSheetsOnly($this->getLoadedSheet());
+        }
+        return $objReader;
     }
 
     /**
      * Create excel writer object.
      *
      * @throws \PHPExcel_Reader_Exception If invalid writer type or the file cannot be loaded.
+     * @throws \Bridge\Components\Exporter\ExporterException If invalid writer option parameter given.
      *
      * @return \PHPExcel_Writer_IWriter
      */
@@ -532,6 +600,8 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
             return $objWriter;
         } catch (\PHPExcel_Writer_Exception $ex) {
             throw new \PHPExcel_Reader_Exception($ex->getMessage());
+        } catch (\Exception $ex) {
+            throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
         }
     }
 
@@ -618,11 +688,17 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
      * @param string $coordinate Selected coordinate parameter.
      * @param string $sheetName  Sheet name parameter.
      *
+     * @throws \Bridge\Components\Exporter\ExporterException If the given worksheet not found on php excel instance.
+     *
      * @return \PHPExcel_Style_Protection
      */
     protected function getCellSecurity($coordinate = 'A1', $sheetName = '')
     {
-        return $this->getStyle($coordinate, $sheetName)->getProtection();
+        try {
+            return $this->getStyle($coordinate, $sheetName)->getProtection();
+        } catch (\Exception $ex) {
+            throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
+        }
     }
 
     /**
@@ -630,7 +706,7 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
      *
      * @param string $column The column string parameter.
      *
-     * @throws \PHPExcel_Exception If invalid column string name.
+     * @throws \Bridge\Components\Exporter\ExporterException If invalid column string name.
      *
      * @return integer
      */
@@ -639,7 +715,7 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
         try {
             return \PHPExcel_Cell::columnIndexFromString($column);
         } catch (\PHPExcel_Exception $ex) {
-            throw new \PHPExcel_Exception($ex->getMessage());
+            throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
         }
     }
 
@@ -750,7 +826,7 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
      *
      * @throws \Bridge\Components\Exporter\ExporterException If failed to get page setup instance.
      *
-     * @return \PHPExcel_Worksheet_PageSetup
+     * @return \Bridge\Components\Exporter\ExcelFile\ExcelPageSetup
      */
     protected function getPageSetup($sheetName = '')
     {
@@ -790,7 +866,7 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
                 throw new \Bridge\Components\Exporter\ExporterException('Worksheet not found!');
             }
         } else {
-            $objWorksheet = $this->getPhpExcelObject()->getActiveSheet();
+            $objWorksheet = $this->getActiveSheet();
         }
         return $objWorksheet;
     }
@@ -837,17 +913,11 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
      *
      * @param integer $column The column number.
      *
-     * @throws \PHPExcel_Exception If invalid column number.
-     *
      * @return string
      */
     protected function getStringFromColumnIndex($column = 0)
     {
-        try {
-            return \PHPExcel_Cell::stringFromColumnIndex($column);
-        } catch (\PHPExcel_Exception $ex) {
-            throw new \PHPExcel_Exception($ex->getMessage());
-        }
+        return \PHPExcel_Cell::stringFromColumnIndex($column);
     }
 
     /**
@@ -877,6 +947,8 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
      * @param integer $colEnd    End column number parameter.
      * @param integer $rowEnd    End row number parameter.
      * @param string  $sheetName Sheet name parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If failed to get style object.
      *
      * @return \PHPExcel_Style
      */
@@ -939,6 +1011,8 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
      *
      * @param string $filePath Excel file path parameter.
      *
+     * @throws \Bridge\Components\Exporter\ExporterException If error raised when set mode.
+     *
      * @return void
      */
     protected function setFilePath($filePath)
@@ -971,8 +1045,7 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
             in_array($mode, ['read', 'update'], true) === true
         ) {
             throw new \Bridge\Components\Exporter\ExporterException(
-                'Cannot set correct mode, please verify that the file can opened/exists/readable
-                '
+                'Cannot set correct mode, please verify that the file can opened/exists/readable'
             );
         }
         $this->Mode = $mode;

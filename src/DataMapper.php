@@ -63,6 +63,48 @@ class DataMapper implements \Bridge\Components\Exporter\Contracts\MapperInterfac
     }
 
     /**
+     * Run mapper procedure.
+     *
+     * @param boolean $replaceSourceData Replace all source data flag option parameter.
+     * @param boolean $reIndex           Re-index all the mapper data result keys flag option parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If any error raised when run the mapper procedure.
+     *
+     * @return void
+     */
+    public function doMapping($replaceSourceData = true, $reIndex = true)
+    {
+        $result = [];
+        # Get the source entity data.
+        $sourceData = $this->getSourceEntityObject()->getData();
+        # Get the target entity data.
+        $targetData = $this->getTargetEntityObject()->getData();
+        if ($reIndex === true) {
+            $sourceData = array_values($sourceData);
+            $targetData = array_values($targetData);
+        }
+        # Compare the field/header between the source and target entity.
+        # Step: Get the field header for each entity that has been mapped.
+        if ($this->validateFieldMapperData() === true) {
+            # Map all the target data using the field data mapper and render into data collection.
+            $fieldDataMapper = $this->getFieldMapperData();
+            foreach ($targetData as $rowNumber => $rows) {
+                foreach ($fieldDataMapper as $sourceField => $targetField) {
+                    $result[$rowNumber][$sourceField] = $rows[$targetField];
+                }
+            }
+            if ($replaceSourceData === false) {
+                $result = array_merge($sourceData, $result);
+            }
+            # If the mapping data is success and entity constraint has been defined then do:
+            # Verify/check all the data type constraint for each field.
+            $this->doValidateDataConstraint($result);
+            # Set the Result property content = the mapper result data.
+            $this->Result = $result;
+        }
+    }
+
+    /**
      * Get the mapper data property.
      *
      * @return array
@@ -118,57 +160,6 @@ class DataMapper implements \Bridge\Components\Exporter\Contracts\MapperInterfac
     }
 
     /**
-     * Run mapper procedure.
-     *
-     * @param boolean $replaceSourceData Replace all source data flag option parameter.
-     * @param boolean $reIndex           Re-index all the mapper data result keys flag option parameter.
-     *
-     * @throws \Bridge\Components\Exporter\ExporterException If any error raised when run the mapper procedure.
-     *
-     * @return boolean
-     */
-    public function runMapper($replaceSourceData = true, $reIndex = true)
-    {
-        try {
-            $result = [];
-            # Get the source entity data.
-            $sourceData = $this->getSourceEntityObject()->getData();
-            # Get the target entity data.
-            $targetData = $this->getTargetEntityObject()->getData();
-            if ($reIndex === true) {
-                $sourceData = array_values($sourceData);
-                $targetData = array_values($targetData);
-            }
-            # Compare the field/header between the source and target entity.
-            # Step: Get the field header for each entity that has been mapped.
-            if ($this->validateFieldMapperData() === true) {
-                # Map all the target data using the field data mapper and render into data collection.
-                $fieldDataMapper = $this->getFieldMapperData();
-                foreach ($targetData as $rowNumber => $rows) {
-                    foreach ($fieldDataMapper as $sourceField => $targetField) {
-                        $result[$rowNumber][$sourceField] = $rows[$targetField];
-                    }
-                }
-                if ($replaceSourceData === false) {
-                    $result = array_merge($sourceData, $result);
-                }
-                # If the mapping data is success and entity constraint has been defined then do:
-                # Verify/check all the data type constraint for each field.
-                if ($this->validateDataConstraint($result) === false) {
-                    return false;
-                }
-                # Set the Result property content = the mapper result data.
-                $this->Result = $result;
-                # If all process going well return true.
-                return true;
-            }
-            return false;
-        } catch (\Exception $ex) {
-            throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
-        }
-    }
-
-    /**
      * Set the array data mapper property.
      *
      * @param array $dataMapper Data mapper property.
@@ -211,9 +202,9 @@ class DataMapper implements \Bridge\Components\Exporter\Contracts\MapperInterfac
      *
      * @throws \Bridge\Components\Exporter\ExporterException If invalid constraint check on mapper result data detected.
      *
-     * @return boolean
+     * @return void
      */
-    private function validateDataConstraint(array $dataMapperResult)
+    private function doValidateDataConstraint(array $dataMapperResult)
     {
         if ($this->getSourceEntityObject()->getConstraintEntityObject() !== null) {
             foreach ($dataMapperResult as $rows) {
@@ -227,7 +218,6 @@ class DataMapper implements \Bridge\Components\Exporter\Contracts\MapperInterfac
                 }
             }
         }
-        return true;
     }
 
     /**

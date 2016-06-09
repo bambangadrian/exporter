@@ -21,24 +21,42 @@ namespace Bridge\Components\Exporter;
  * @copyright  2016 -
  * @release    $Revision$
  */
-class DbDataSource implements \Bridge\Components\Exporter\Contracts\DataSourceInterface
+class DbDataSource extends \Bridge\Components\Exporter\AbstractDataSource
 {
 
     /**
      * Database adapter that will be required to open connection to server.
      *
-     * @var \Bridge\Components\Database\Contracts\DatabaseAdapterInterface $DatabaseAdapter
+     * @var \Bridge\Components\Exporter\Contracts\DatabaseHandlerInterface $DatabaseHandler
      */
-    protected $DatabaseAdapter;
+    protected $DatabaseHandler;
+
+    /**
+     * DbDataSource constructor.
+     *
+     * @param \Bridge\Components\Exporter\Contracts\DatabaseHandlerInterface $dbHandlerObj Database handler object.
+     */
+    public function __construct(\Bridge\Components\Exporter\Contracts\DatabaseHandlerInterface $dbHandlerObj)
+    {
+        $this->DatabaseHandler = $dbHandlerObj;
+    }
 
     /**
      * Load the data source and run initial process.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If failed to retrieve database information.
      *
      * @return void
      */
     public function doLoad()
     {
-        # TODO: Implement doLoad() method.
+        $this->getDatabaseHandlerObject()->doRead();
+        try {
+            $this->setData($this->DatabaseHandler->getData());
+            $this->setFields($this->DatabaseHandler->getFields());
+        } catch (\Exception $ex) {
+            throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
+        }
     }
 
     /**
@@ -50,28 +68,30 @@ class DbDataSource implements \Bridge\Components\Exporter\Contracts\DataSourceIn
      */
     public function doMassImport(array $data)
     {
-        # TODO: Implement doMassImport() method.
+        if ($this->validateImportData($data) === true) {
+
+        }
     }
 
     /**
-     * Get resource data.
+     * Get database handler object.
      *
-     * @param array $fieldFilters Array field filters data parameter.
-     *
-     * @return array
+     * @return \Bridge\Components\Exporter\Contracts\DatabaseHandlerInterface
      */
-    public function getData(array $fieldFilters = [])
+    public function getDatabaseHandlerObject()
     {
-        # TODO: Implement getData() method.
+        return $this->DatabaseHandler;
     }
 
     /**
-     * Get field lists from data source.
+     * Validate import data before saving into database.
      *
-     * @return array
+     * @param array $data Import data collection parameter.
+     *
+     * @return boolean
      */
-    public function getFields()
+    private function validateImportData($data)
     {
-        # TODO: Implement getFields() method.
+        return true;
     }
 }

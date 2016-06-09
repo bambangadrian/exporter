@@ -29,6 +29,8 @@ class StringType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldTyp
      *
      * @param mixed $fieldLength  Field type length parameter.
      * @param mixed $defaultValue Field type default value parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If any error raised when construct the object.
      */
     public function __construct($fieldLength = null, $defaultValue = null)
     {

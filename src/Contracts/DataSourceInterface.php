@@ -41,18 +41,20 @@ interface DataSourceInterface
     public function doMassImport(array $data);
 
     /**
-     * Get the resource data.
+     * Get resource data.
      *
-     * @param array $tableName Table name filter parameter.
+     * @param array $entityFilter Selected entity collection that will be parsed.
      *
      * @return array
      */
-    public function getData(array $tableName = []);
+    public function getData(array $entityFilter = []);
 
     /**
      * Get field lists from data source.
      *
+     * @param string $entityName Selected entity name that will be fetch the field column list.
+     *
      * @return array
      */
-    public function getFields();
+    public function getFields($entityName = '');
 }

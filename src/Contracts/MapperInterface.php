@@ -25,6 +25,18 @@ interface MapperInterface
 {
 
     /**
+     * Run mapper procedure.
+     *
+     * @param boolean $replaceSourceData Replace all source data flag option parameter.
+     * @param boolean $reIndex           Re-index all the mapper data result keys flag option parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If any error raised when run the mapper procedure.
+     *
+     * @return void
+     */
+    public function doMapping($replaceSourceData = true, $reIndex = true);
+
+    /**
      * Get the mapper data property.
      *
      * @return array
@@ -53,14 +65,4 @@ interface MapperInterface
      * @return \Bridge\Components\Exporter\Contracts\EntityInterface
      */
     public function getTargetEntityObject();
-
-    /**
-     * Run mapper procedure.
-     *
-     * @param boolean $replaceSourceData Replace all source data flag option parameter.
-     * @param boolean $reIndex           Re-index all the mapper data result keys flag option parameter.
-     *
-     * @return boolean
-     */
-    public function runMapper($replaceSourceData = true, $reIndex = true);
 }

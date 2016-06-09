@@ -21,15 +21,8 @@ namespace Bridge\Components\Exporter;
  * @copyright  2016 -
  * @release    $Revision$
  */
-class ExcelDataSource implements \Bridge\Components\Exporter\Contracts\DataSourceInterface
+class ExcelDataSource extends \Bridge\Components\Exporter\AbstractDataSource
 {
-
-    /**
-     * Data row collection property.
-     *
-     * @var array $Data
-     */
-    private $Data = [];
 
     /**
      * Excel file object property.
@@ -44,20 +37,6 @@ class ExcelDataSource implements \Bridge\Components\Exporter\Contracts\DataSourc
      * @var \Bridge\Components\Exporter\ExcelEntityFieldsReadFilter $FieldReadFilter
      */
     private $FieldReadFilter;
-
-    /**
-     * Fields data collection property.
-     *
-     * @var array $Fields
-     */
-    private $Fields = [];
-
-    /**
-     * Multiple source options.
-     *
-     * @var boolean $MultipleSource
-     */
-    private $MultipleSource = false;
 
     /**
      * Record read filter that will be used to filter the contents row.
@@ -90,6 +69,8 @@ class ExcelDataSource implements \Bridge\Components\Exporter\Contracts\DataSourc
 
     /**
      * Load the excel file and run initial process.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If failed to read the excel source data.
      *
      * @return void
      */
@@ -137,53 +118,18 @@ class ExcelDataSource implements \Bridge\Components\Exporter\Contracts\DataSourc
      *
      * @param array $data Data that will be updated into data source.
      *
+     * @throws \Bridge\Components\Exporter\ExporterException If failed to set grid data or writing the changes.
+     *
      * @return void
      */
     public function doMassImport(array $data)
     {
-        $this->getExcelFileObject()->setGrid($data);
-        $this->getExcelFileObject()->doSave();
-    }
-
-    /**
-     * Get resource data.
-     *
-     * @param array $sheetFilters Selected table that will be parsed.
-     *
-     * @return array
-     */
-    public function getData(array $sheetFilters = [])
-    {
-        $filteredData = $this->Data;
-        if (count(array_filter($sheetFilters)) > 0 and $this->isMultipleSource() === true) {
-            $existingSheets = array_keys($filteredData);
-            foreach ($existingSheets as $sheetName) {
-                if (in_array($sheetName, $sheetFilters, true) === false) {
-                    unset($filteredData[$sheetName]);
-                }
-            }
+        try {
+            $this->getExcelFileObject()->setGrid($data);
+            $this->getExcelFileObject()->doSave();
+        } catch (\Exception $ex) {
+            throw new \Bridge\Components\Exporter\ExporterException('Failed to do mass import: ' . $ex->getMessage());
         }
-        return $filteredData;
-    }
-
-    /**
-     * Get fields data array from data source.
-     *
-     * @return array
-     */
-    public function getFields()
-    {
-        return $this->Fields;
-    }
-
-    /**
-     * Check if instance handle multiple data source.
-     *
-     * @return boolean
-     */
-    public function isMultipleSource()
-    {
-        return $this->MultipleSource;
     }
 
     /**
@@ -192,6 +138,8 @@ class ExcelDataSource implements \Bridge\Components\Exporter\Contracts\DataSourc
      * @param integer $startRow  Field row number parameter.
      * @param array   $columns   Column range data parameter.
      * @param string  $sheetName Sheet name parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If multiple number of row that given.
      *
      * @return void
      */
@@ -233,41 +181,5 @@ class ExcelDataSource implements \Bridge\Components\Exporter\Contracts\DataSourc
     protected function getRecordReadFilter()
     {
         return $this->RecordReadFilter;
-    }
-
-    /**
-     * Set record set data from excel data source.
-     *
-     * @param array $data Data array that contain record set parameter.
-     *
-     * @return void
-     */
-    protected function setData(array $data = [])
-    {
-        $this->Data = $data;
-    }
-
-    /**
-     * Set fields property
-     *
-     * @param array $fields Fields data array parameter.
-     *
-     * @return void
-     */
-    protected function setFields($fields)
-    {
-        $this->Fields = $fields;
-    }
-
-    /**
-     * Set the multiple source flag option into
-     *
-     * @param boolean $multipleSource Multi source option flag parameter.
-     *
-     * @return void
-     */
-    protected function setMultipleSource($multipleSource = true)
-    {
-        $this->MultipleSource = $multipleSource;
     }
 }

@@ -78,15 +78,11 @@ abstract class AbstractEntityBuilder implements \Bridge\Components\Exporter\Cont
      */
     public function __construct(\Bridge\Components\Exporter\Contracts\DataSourceInterface $dataSource)
     {
-        try {
-            # Set the data source property.
-            $this->DataSource = $dataSource;
-            $this->getDataSourceObject()->doLoad();
-            $this->EntitiesData = $this->getDataSourceObject()->getData();
-            $this->fetchDataSourceType();
-        } catch (\Exception $ex) {
-            throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
-        }
+        # Set the data source property.
+        $this->DataSource = $dataSource;
+        $this->getDataSourceObject()->doLoad();
+        $this->EntitiesData = $this->getDataSourceObject()->getData();
+        $this->fetchDataSourceType();
     }
 
     /**
@@ -169,30 +165,26 @@ abstract class AbstractEntityBuilder implements \Bridge\Components\Exporter\Cont
      */
     protected function doFieldMapping()
     {
-        try {
-            # Get the entities data.
-            $entitiesData = $this->getEntitiesData();
-            # Map the entities data using the valid mapper.
-            $fieldMapper = $this->getFieldMapper();
-            foreach ($entitiesData as $entityName => $entity) {
-                foreach ((array)$entity as $rowNumber => $rows) {
-                    foreach ((array)$rows as $field => $value) {
-                        if (in_array($field, $fieldMapper, true) === true) {
-                            unset($entitiesData[$entityName][$rowNumber][$field]);
-                            $entitiesData[$entityName][$rowNumber][array_search(
-                                $field,
-                                $fieldMapper,
-                                true
-                            )] = $value;
-                        }
+        # Get the entities data.
+        $entitiesData = $this->getEntitiesData();
+        # Map the entities data using the valid mapper.
+        $fieldMapper = $this->getFieldMapper();
+        foreach ($entitiesData as $entityName => $entity) {
+            foreach ((array)$entity as $rowNumber => $rows) {
+                foreach ((array)$rows as $field => $value) {
+                    if (in_array($field, $fieldMapper, true) === true) {
+                        unset($entitiesData[$entityName][$rowNumber][$field]);
+                        $entitiesData[$entityName][$rowNumber][array_search(
+                            $field,
+                            $fieldMapper,
+                            true
+                        )] = $value;
                     }
                 }
             }
-            # Set the entities data.
-            $this->EntitiesData = $entitiesData;
-        } catch (\Exception $ex) {
-            throw new \Bridge\Components\Exporter\ExporterException('Field mapping failed: ' . $ex->getMessage());
         }
+        # Set the entities data.
+        $this->EntitiesData = $entitiesData;
     }
 
     /**

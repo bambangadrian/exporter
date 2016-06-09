@@ -50,12 +50,18 @@ abstract class AbstractFieldType implements \Bridge\Components\Exporter\Contract
      *
      * @param mixed $fieldLength  Field type length parameter.
      * @param mixed $defaultValue Field type default value parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If any error raised when construct the object.
      */
     public function __construct($fieldLength = null, $defaultValue = null)
     {
-        $this->setFieldLength($fieldLength);
-        if ($defaultValue !== null) {
-            $this->setDefaultValue($defaultValue);
+        try {
+            $this->setFieldLength($fieldLength);
+            if ($defaultValue !== null) {
+                $this->setDefaultValue($defaultValue);
+            }
+        } catch (\Exception $ex) {
+            throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
         }
     }
 

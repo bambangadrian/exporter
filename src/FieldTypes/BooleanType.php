@@ -29,6 +29,8 @@ class BooleanType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldTy
      *
      * @param mixed $fieldLength  Field type length parameter.
      * @param mixed $defaultValue Field type default value parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If any error raised when construct the object.
      */
     public function __construct($fieldLength = null, $defaultValue = null)
     {
@@ -41,11 +43,11 @@ class BooleanType extends \Bridge\Components\Exporter\FieldTypes\AbstractFieldTy
      *
      * @param mixed $value Value that want to be formatted.
      *
-     * @return mixed
+     * @return boolean
      */
     public function doFormat($value)
     {
-        return (boolean)$value;
+        return parent::doFormat((boolean)$value);
     }
 
     /**

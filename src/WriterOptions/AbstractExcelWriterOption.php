@@ -50,6 +50,8 @@ abstract class AbstractExcelWriterOption implements \Bridge\Components\Exporter\
      *
      * @param \PHPExcel_Writer_IWriter $objWriter Writer instance parameter.
      * @param array                    $options   Options data parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If invalid writer options given.
      */
     public function __construct(\PHPExcel_Writer_IWriter $objWriter, array $options = [])
     {

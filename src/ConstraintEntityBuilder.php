@@ -25,6 +25,13 @@ class ConstraintEntityBuilder extends \Bridge\Components\Exporter\AbstractEntity
 {
 
     /**
+     * Date format that applied on the entities collection.
+     *
+     * @var string $DateFormat
+     */
+    protected $DateFormat = 'Y-m-d';
+
+    /**
      * Field type mapper data property.
      *
      * @var array
@@ -68,42 +75,59 @@ class ConstraintEntityBuilder extends \Bridge\Components\Exporter\AbstractEntity
         try {
             # Load and validate the data source and
             $this->doLoad();
-            # Get the entities data.
-            $entitiesData = $this->getEntitiesData();
-            # Initialize the entity object content.
-            $entityCollection = [];
-            foreach ($entitiesData as $entityName => $entityData) {
-                # Create a table source as the data source for entity.
-                $entityObj = new \Bridge\Components\Exporter\ConstraintEntity($entityName);
-                $entityObj->setData($entityData);
-                foreach ((array)$entityData as $fieldData) {
-                    $fieldType = $this->getFieldTypeMap($fieldData['fieldType']);
-                    $fieldLength = $fieldData['fieldLength'];
-                    if ($this->getDataSourceType() === 'excel' and $fieldType === 'enum') {
-                        $fieldLength = json_decode(
-                            \Bridge\Components\Exporter\StringUtility::toJson($fieldLength),
-                            true
-                        );
-                    }
-                    # Parse the field constraint from entity array.
-                    $constraints = [
-                        'required'      => (boolean)$fieldData['required'],
-                        'fieldTypeData' => [
-                            'type'   => $fieldType,
-                            'length' => $fieldLength
-                        ]
-                    ];
-                    # Create the field element object and assign the field element into the table entity.
-                    $fieldObj = new \Bridge\Components\Exporter\FieldElement($fieldData['fieldName'], $constraints);
-                    $entityObj->addField($fieldObj);
-                }
-                # Add the entity object to the collection.
-                $entityCollection[$entityName] = $entityObj;
-            }
-            $this->Entities = $entityCollection;
         } catch (\Exception $ex) {
             throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
         }
+        # Get the entities data.
+        $entitiesData = $this->getEntitiesData();
+        # Initialize the entity object content.
+        $entityCollection = [];
+        foreach ($entitiesData as $entityName => $entityData) {
+            # Create a table source as the data source for entity.
+            $entityObj = new \Bridge\Components\Exporter\ConstraintEntity($entityName);
+            $entityObj->setData($entityData);
+            foreach ((array)$entityData as $fieldData) {
+                $fieldType = $this->getFieldTypeMap($fieldData['fieldType']);
+                $fieldLength = $fieldData['fieldLength'];
+                if ($this->getDataSourceType() === 'excel' and $fieldType === 'enum') {
+                    $fieldLength = json_decode(
+                        \Bridge\Components\Exporter\StringUtility::toJson($fieldLength),
+                        true
+                    );
+                }
+                # Parse the field constraint from entity array.
+                $constraints = [
+                    'required'      => (boolean)$fieldData['required'],
+                    'fieldTypeData' => [
+                        'type'   => $fieldType,
+                        'length' => $fieldLength
+                    ]
+                ];
+                if ($fieldType === 'date') {
+                    $dateFormat = $this->getDateFormat();
+                    if (array_key_exists('fieldFormat', $fieldData) === true) {
+                        $dateFormat = $fieldData['fieldFormat'];
+                    }
+                    $constraints['fieldTypeData']['format'] = $dateFormat;
+                }
+                # Create the field element object and assign the field element into the table entity.
+                $fieldObj = new \Bridge\Components\Exporter\FieldElement($fieldData['fieldName'], $constraints);
+                $entityObj->addField($fieldObj);
+            }
+            # Add the entity object to the collection.
+            $entityCollection[$entityName] = $entityObj;
+        }
+        $this->Entities = $entityCollection;
+    }
+
+    /**
+     * Get date format property.
+     *
+     * @return string
+     */
+    public function getDateFormat()
+    {
+        return $this->DateFormat;
     }
 
     /**
@@ -144,6 +168,18 @@ class ConstraintEntityBuilder extends \Bridge\Components\Exporter\AbstractEntity
     public function getRequiredFields()
     {
         return $this->RequiredFields;
+    }
+
+    /**
+     * Set date format property.
+     *
+     * @param string $dateFormat Date format parameter.
+     *
+     * @return void
+     */
+    public function setDateFormat($dateFormat = 'Y-m-d')
+    {
+        $this->DateFormat = $dateFormat;
     }
 
     /**
@@ -220,7 +256,7 @@ class ConstraintEntityBuilder extends \Bridge\Components\Exporter\AbstractEntity
      *
      * @throws \Bridge\Components\Exporter\ExporterException Invalid field type given.
      *
-     * @return mixed
+     * @return string
      */
     protected function getFieldTypeMap($fieldType)
     {
@@ -234,10 +270,10 @@ class ConstraintEntityBuilder extends \Bridge\Components\Exporter\AbstractEntity
             if (in_array($fieldType, $validType, true) === false) {
                 throw new \Bridge\Components\Exporter\ExporterException('Invalid field type given: ' . $fieldType);
             }
-            return $fieldType;
         } catch (\Exception $ex) {
             throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
         }
+        return $fieldType;
     }
 
     /**

@@ -27,11 +27,14 @@ interface ExcelReaderInterface
     /**
      * Printing the excel document.
      *
-     * @param array $options Option array set to printing mode parameter.
+     * @param array  $options   Option array set to printing mode parameter.
+     * @param string $sheetName Sheet name parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If failed to get page setup or margin instance.
      *
      * @return void
      */
-    public function doPrinting(array $options = []);
+    public function doPrinting(array $options = [], $sheetName = '');
 
     /**
      * Load and read excel file.
@@ -41,7 +44,8 @@ interface ExcelReaderInterface
      *                                                                                   parameter.
      * @param string                                                         $readerType Excel reader type parameter.
      *
-     * @throws \PHPExcel_Reader_Exception If invalid reader type or the file cannot be loaded.
+     * @throws \Bridge\Components\Exporter\ExporterException If any error raised when read the excel content.
+     *
      * @return void
      */
     public function doRead(
