@@ -54,7 +54,7 @@ abstract class AbstractDataSourceDecorator implements \Bridge\Components\Exporte
     /**
      * Do mass import data set.
      *
-     * @param array $data Data that will be updated into data source.
+     * @param array $data Data that will be updated.
      *
      * @return void
      */

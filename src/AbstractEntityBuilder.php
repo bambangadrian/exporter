@@ -72,14 +72,14 @@ abstract class AbstractEntityBuilder implements \Bridge\Components\Exporter\Cont
     /**
      * AbstractEntityBuilder constructor.
      *
-     * @param \Bridge\Components\Exporter\Contracts\DataSourceInterface $dataSource Data source instance parameter.
+     * @param \Bridge\Components\Exporter\Contracts\DataSourceInterface $dataSourceObj Data source instance parameter.
      *
      * @throws \Bridge\Components\Exporter\ExporterException If any error raised when construct the instance.
      */
-    public function __construct(\Bridge\Components\Exporter\Contracts\DataSourceInterface $dataSource)
+    public function __construct(\Bridge\Components\Exporter\Contracts\DataSourceInterface $dataSourceObj)
     {
         # Set the data source property.
-        $this->DataSource = $dataSource;
+        $this->DataSource = $dataSourceObj;
         $this->getDataSourceObject()->doLoad();
         $this->EntitiesData = $this->getDataSourceObject()->getData();
         $this->fetchDataSourceType();

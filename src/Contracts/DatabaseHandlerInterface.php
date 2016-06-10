@@ -27,9 +27,11 @@ interface DatabaseHandlerInterface
     /**
      * Fetch all data information from database.
      *
+     * @param array $loadedTables Selected table collection data that want to be loaded.
+     *
      * @return void
      */
-    public function doRead();
+    public function doRead(array $loadedTables = []);
 
     /**
      * Execute query string.
@@ -59,11 +61,25 @@ interface DatabaseHandlerInterface
     public function getData($tableName = '');
 
     /**
+     * Get doctrine database connection object.
+     *
+     * @return \Doctrine\DBAL\Connection
+     */
+    public function getDatabaseConnectionObject();
+
+    /**
      * Get database driver name.
      *
      * @return string
      */
     public function getDatabaseDriver();
+
+    /**
+     * Get field type mapper data property.
+     *
+     * @return array
+     */
+    public function getFieldTypeMapper();
 
     /**
      * Get all field list or only on selected table.
@@ -73,6 +89,17 @@ interface DatabaseHandlerInterface
      * @return array
      */
     public function getFields($tableName = '');
+
+    /**
+     * Get mapped field type.
+     *
+     * @param string $fieldType Field type parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException Invalid field type given.
+     *
+     * @return string
+     */
+    public function getMappedFieldType($fieldType);
 
     /**
      * Get database schema manager object.

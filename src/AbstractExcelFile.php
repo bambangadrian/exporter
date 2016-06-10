@@ -25,6 +25,27 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
 {
 
     /**
+     * The content data property that fetched from excel document.
+     *
+     * @var array $Data
+     */
+    protected $Data;
+
+    /**
+     * File name property.
+     *
+     * @var string $FileName
+     */
+    protected $FileName;
+
+    /**
+     * File path property.
+     *
+     * @var string $FilePath
+     */
+    protected $FilePath;
+
+    /**
      * Grid data array that will be saved to excel document.
      *
      * @var array $Grid
@@ -32,81 +53,60 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
     protected $Grid;
 
     /**
-     * The content data property that fetched from excel document.
-     *
-     * @var array $Data
-     */
-    private $Data;
-
-    /**
-     * File name property.
-     *
-     * @var string $FileName
-     */
-    private $FileName;
-
-    /**
-     * File path property.
-     *
-     * @var string $FilePath
-     */
-    private $FilePath;
-
-    /**
      * Loaded sheet collection property.
      *
      * @var array $LoadedSheets
      */
-    private $LoadedSheets = [];
+    protected $LoadedSheets = [];
 
     /**
      * Action mode property.
      *
      * @var string $Mode
      */
-    private $Mode;
+    protected $Mode;
 
     /**
      * Php excel object property.
      *
      * @var \PHPExcel $PhpExcel
      */
-    private $PhpExcel;
+    protected $PhpExcel;
 
     /**
      * Read filter object property.
      *
      * @var \Bridge\Components\Exporter\Contracts\ExcelReadFilterInterface $ReadFilter
      */
-    private $ReadFilter;
+    protected $ReadFilter;
 
     /**
      * Php excel reader object property.
      *
      * @var \Bridge\Components\Exporter\Contracts\ExcelReaderInterface $Reader
      */
-    private $Reader;
+    protected $Reader;
 
     /**
      * Excel reader and writer type property.
      *
      * @var string $ReaderAndWriterType
      */
-    private $ReaderAndWriterType;
+    protected $ReaderAndWriterType;
 
     /**
      * Php excel writer object property.
      *
      * @var \PHPExcel_Writer_IWriter $Writer
      */
-    private $Writer;
+    protected $Writer;
 
     /**
      * Excel writer data options property
      *
      * @var array $WriterOptions
      */
-    private $WriterOptions = [];
+    protected $WriterOptions = [];
 
     /**
      * Data collection that contains all the key name of valid styles constraint.
@@ -242,7 +242,9 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
         $readerType = 'Excel2007'
     ) {
         $this->setMode('read');
-        $this->setLoadedSheets($sheetNames);
+        if (count($sheetNames) > 0 and $sheetNames !== null) {
+            $this->setLoadedSheets($sheetNames);
+        }
         $this->setReaderAndWriterType($readerType);
         if ($readFilter !== null) {
             $this->setReadFilter($readFilter);
@@ -257,8 +259,17 @@ abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Cont
         }
         $workSheetIterator = $this->getPhpExcelObject()->getWorksheetIterator();
         $gridData = [];
+        $loadedSheet = array_map(
+            function ($val) {
+                return strtolower($val);
+            },
+            $this->getLoadedSheet()
+        );
         foreach ($workSheetIterator as $worksheet) {
             $worksheetTitle = $worksheet->getTitle();
+            if (count($loadedSheet) > 0 and in_array(strtolower($worksheetTitle), $loadedSheet, true) === false) {
+                continue;
+            }
             $worksheetData = [];
             $objWorkSheet = $this->setActiveSheetIndexByName($worksheetTitle);
             $rowIterator = $objWorkSheet->getRowIterator();

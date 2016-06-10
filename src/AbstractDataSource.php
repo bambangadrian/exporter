@@ -39,6 +39,13 @@ abstract class AbstractDataSource implements \Bridge\Components\Exporter\Contrac
     protected $Fields = [];
 
     /**
+     * Selected entities that will be loaded.
+     *
+     * @var array $LoadedEntities
+     */
+    protected $LoadedEntities = [];
+
+    /**
      * Multiple source options.
      *
      * @var boolean $MultipleSource
@@ -56,10 +63,10 @@ abstract class AbstractDataSource implements \Bridge\Components\Exporter\Contrac
     {
         $filteredData = $this->Data;
         if (count(array_filter($entityFilter)) > 0 and $this->isMultipleSource() === true) {
-            $existingSheets = array_keys($filteredData);
-            foreach ($existingSheets as $sheetName) {
-                if (in_array($sheetName, $entityFilter, true) === false) {
-                    unset($filteredData[$sheetName]);
+            $existingEntities = array_keys($filteredData);
+            foreach ($existingEntities as $entityName) {
+                if (in_array($entityName, $entityFilter, true) === false) {
+                    unset($filteredData[$entityName]);
                 }
             }
         }
@@ -82,6 +89,16 @@ abstract class AbstractDataSource implements \Bridge\Components\Exporter\Contrac
     }
 
     /**
+     * Get loaded entities property
+     *
+     * @return array
+     */
+    public function getLoadedEntities()
+    {
+        return $this->LoadedEntities;
+    }
+
+    /**
      * Check if instance handle multiple data source.
      *
      * @return boolean
@@ -89,6 +106,18 @@ abstract class AbstractDataSource implements \Bridge\Components\Exporter\Contrac
     public function isMultipleSource()
     {
         return $this->MultipleSource;
+    }
+
+    /**
+     * Set entities that will be loaded.
+     *
+     * @param array $loadedEntities Loaded entities data array parameter.
+     *
+     * @return void
+     */
+    public function setLoadedEntities(array $loadedEntities = [])
+    {
+        $this->LoadedEntities = $loadedEntities;
     }
 
     /**

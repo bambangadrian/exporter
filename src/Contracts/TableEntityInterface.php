@@ -25,6 +25,15 @@ interface TableEntityInterface extends \Bridge\Components\Exporter\Contracts\Ent
 {
 
     /**
+     * Delete the selected table entity record row.
+     *
+     * @param array $condition Condition to select the specific row.
+     *
+     * @return boolean
+     */
+    public function deleteRow(array $condition);
+
+    /**
      * Get the constraint entity object as the table entity constraint data property.
      *
      * @return \Bridge\Components\Exporter\Contracts\ConstraintEntityInterface
@@ -37,4 +46,23 @@ interface TableEntityInterface extends \Bridge\Components\Exporter\Contracts\Ent
      * @return boolean
      */
     public function hasConstraint();
+
+    /**
+     * Insert new table entity record row from data collection.
+     *
+     * @param array $data Data that will be inserted.
+     *
+     * @return boolean
+     */
+    public function insertRow(array $data);
+
+    /**
+     * Update table entity record row.
+     *
+     * @param array $data      Data that will be updated.
+     * @param array $condition Condition to select the specific row.
+     *
+     * @return boolean
+     */
+    public function updateRow(array $data, array $condition);
 }

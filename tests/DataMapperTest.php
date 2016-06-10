@@ -28,11 +28,11 @@ $fieldMapper = [
 # Set the field type mapper to constraint entity builder.
 $constraintBuilder->setFieldMapper($fieldMapper);
 $fieldTypeMapper = [
-    'string'  => 'Character',
-    'number'  => 'Numeric',
-    'enum'    => 'Enumeration',
-    'date'    => 'Date',
-    'boolean' => 'Boolean'
+    'Character'   => 'string',
+    'Numeric'     => 'number',
+    'Enumeration' => 'enum',
+    'Date'        => 'date',
+    'Boolean'     => 'boolean'
 ];
 $constraintBuilder->setFieldTypeMapper($fieldTypeMapper);
 # Build the constraint entities.
@@ -87,5 +87,5 @@ $mapperObject->setFieldMapperData($fieldMapperData);
 # Run the mapper procedure.
 $mapperObject->doMapping();
 # Get the mapper result.
-$matcherResult = $mapperObject->getMappedData();
-debug($matcherResult);
+$mapperResult = $mapperObject->getMappedData();
+//debug($mapperResult);

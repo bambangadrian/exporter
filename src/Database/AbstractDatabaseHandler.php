@@ -32,6 +32,13 @@ abstract class AbstractDatabaseHandler implements \Bridge\Components\Exporter\Co
     protected $ConnectionConfig;
 
     /**
+     * Constraint entity collection data.
+     *
+     * @var \Bridge\Components\Exporter\ConstraintEntity[] $Constraints
+     */
+    protected $Constraints;
+
+    /**
      * Array data collection parameter.
      *
      * @var array $Data
@@ -60,9 +67,16 @@ abstract class AbstractDatabaseHandler implements \Bridge\Components\Exporter\Co
     protected $DatabaseName;
 
     /**
+     * Field type mapper data property.
+     *
+     * @var array $FieldTypeMapper
+     */
+    protected $FieldTypeMapper;
+
+    /**
      * Field column lists collection data.
      *
-     * @var \Doctrine\DBAL\Schema\Column[] $Fields
+     * @var array $Fields
      */
     protected $Fields;
 
@@ -72,6 +86,13 @@ abstract class AbstractDatabaseHandler implements \Bridge\Components\Exporter\Co
      * @var string $Host
      */
     protected $Host;
+
+    /**
+     * Table collection that will be loaded.
+     *
+     * @var array $LoadedTables
+     */
+    protected $LoadedTables;
 
     /**
      * Doctrine schema manager instance.
@@ -114,16 +135,48 @@ abstract class AbstractDatabaseHandler implements \Bridge\Components\Exporter\Co
     /**
      * Fetch all data information from database.
      *
+     * @param array $loadedTables Selected table collection data that want to be loaded.
+     *
      * @return void
      */
-    public function doRead()
+    public function doRead(array $loadedTables = [])
     {
-        $tables = $this->getTables();
-        foreach ($tables as $table) {
-            $queryFetchData = 'SELECT * FROM "' . $table->getName() . '"';
-            $table->getColumns();
-            $this->Data[$table->getName()] = $this->getDatabaseConnectionObject()->fetchAll($queryFetchData);
+        if (count($loadedTables) > 0 and $loadedTables !== null) {
+            $this->setLoadedTables($loadedTables);
         }
+        $loadedTables = array_map(
+            function ($val) {
+                return strtolower($val);
+            },
+            $this->getLoadedTables()
+        );
+        $tableList = $this->getSchemaManagerObject()->listTables();
+        $fields = [];
+        $sourceData = [];
+        # Fetch all the fields from table list.
+        foreach ($tableList as $tableObj) {
+            if (count($loadedTables) > 0 and
+                in_array(strtolower($tableObj->getName()), $loadedTables, true) === false
+            ) {
+                continue;
+            }
+            $columnCollection = $this->getSchemaManagerObject()->listTableColumns(
+                $tableObj->getName(),
+                $this->getDatabaseConnectionObject()->getDatabase()
+            );
+            foreach ($columnCollection as $columnObj) {
+                $fields[$tableObj->getName()][] = $columnObj->getName();
+            }
+            # Fetch all the data grouped by table.
+            $queryFetchData = 'SELECT * FROM "' . $tableObj->getName() . '"';
+            $tableObj->getColumns();
+            $sourceData[$tableObj->getName()] = $this->getDatabaseConnectionObject()->fetchAll($queryFetchData);
+        }
+        # Set the tables, and fields.
+        $this->Tables = $tableList;
+        $this->Fields = $fields;
+        # Set the source data.
+        $this->Data = $sourceData;
     }
 
     /**
@@ -254,6 +307,43 @@ abstract class AbstractDatabaseHandler implements \Bridge\Components\Exporter\Co
     }
 
     /**
+     * Get loaded table property.
+     *
+     * @return array
+     */
+    public function getLoadedTables()
+    {
+        return $this->LoadedTables;
+    }
+
+    /**
+     * Get mapped field type.
+     *
+     * @param string $fieldType Field type parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException Invalid field type given.
+     *
+     * @return string
+     */
+    public function getMappedFieldType($fieldType)
+    {
+        try {
+            if ($this->validateFieldTypeMapper() === true and
+                array_key_exists($fieldType, $this->getFieldTypeMapper()) === true
+            ) {
+                $fieldType = $this->getFieldTypeMapper()[$fieldType];
+            }
+            $validType = \Bridge\Components\Exporter\FieldTypes\FieldTypesFactory::$AllowedTypeList;
+            if (in_array($fieldType, $validType, true) === false) {
+                throw new \Bridge\Components\Exporter\ExporterException('Invalid field type given: ' . $fieldType);
+            }
+        } catch (\Exception $ex) {
+            throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
+        }
+        return $fieldType;
+    }
+
+    /**
      * Get database schema manager object.
      *
      * @return \Doctrine\DBAL\Schema\AbstractSchemaManager
@@ -284,26 +374,41 @@ abstract class AbstractDatabaseHandler implements \Bridge\Components\Exporter\Co
     }
 
     /**
+     * Set loaded table property.
+     *
+     * @param array $loadedTables Table collection data parameter that want to be loaded.
+     *
+     * @return void
+     */
+    public function setLoadedTables($loadedTables)
+    {
+        $this->LoadedTables = $loadedTables;
+    }
+
+    /**
      * Load the database connection.
      *
      * @throws \Bridge\Components\Exporter\ExporterException If any error raised when loading the doctrine refactor.
+     * @throws \Bridge\Components\Exporter\ExporterException If the converted type is not found.
      *
      * @return void
      */
     protected function doLoad()
     {
+        /* @noinspection PhpInternalEntityUsedInspection */
+        $config = new \Doctrine\DBAL\Configuration();
         try {
-            /* @noinspection PhpInternalEntityUsedInspection */
-            $config = new \Doctrine\DBAL\Configuration();
             $this->DatabaseConnection = \Doctrine\DBAL\DriverManager::getConnection(
                 $this->getConnectionConfig(),
                 $config
             );
-        } catch (\Exception $ex) {
+            # Perform to convert bit type to boolean.
+            $platform = $this->getDatabaseConnectionObject()->getDatabasePlatform();
+            $platform->registerDoctrineTypeMapping('bit', 'boolean');
+        } catch (\Doctrine\DBAL\DBALException $ex) {
             throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
         }
         $this->SchemaManager = $this->getDatabaseConnectionObject()->getSchemaManager();
-        $this->Tables = $this->getSchemaManagerObject()->listTables();
     }
 
     /**
@@ -327,5 +432,23 @@ abstract class AbstractDatabaseHandler implements \Bridge\Components\Exporter\Co
         # Add the driver item data into array.
         $connectionConfig['driver'] = $this->getDatabaseDriver();
         $this->ConnectionConfig = $connectionConfig;
+    }
+
+    /**
+     * Validate the field type mapper property.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If invalid field type mapper array data given.
+     *
+     * @return boolean
+     */
+    protected function validateFieldTypeMapper()
+    {
+        $validType = \Bridge\Components\Exporter\FieldTypes\FieldTypesFactory::$AllowedTypeList;
+        if (count($this->getFieldTypeMapper()) > 0 and
+            count(array_diff($this->getFieldTypeMapper(), $validType)) !== 0
+        ) {
+            throw new \Bridge\Components\Exporter\ExporterException('Invalid field type mapper array data given');
+        }
+        return true;
     }
 }

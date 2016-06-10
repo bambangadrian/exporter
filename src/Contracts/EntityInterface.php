@@ -32,6 +32,13 @@ interface EntityInterface
     public function getData();
 
     /**
+     * Get data source instance.
+     *
+     * @return \Bridge\Components\Exporter\Contracts\DataSourceInterface
+     */
+    public function getDataSourceObject();
+
+    /**
      * Get selected field property.
      *
      * @param string $fieldName Field name parameter.

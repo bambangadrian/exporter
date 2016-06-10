@@ -46,11 +46,11 @@ class BasicExporter implements \Bridge\Components\Exporter\Contracts\ExporterInt
     private $Status;
 
     /**
-     * Target object property
+     * Target entity object property.
      *
-     * @var \Bridge\Components\Exporter\Contracts\DataSourceInterface $TargetObject
+     * @var \Bridge\Components\Exporter\Contracts\TableEntityInterface $TargetEntity
      */
-    private $TargetObject;
+    private $TargetEntity;
 
     /**
      * Required log key array data property.
@@ -62,26 +62,28 @@ class BasicExporter implements \Bridge\Components\Exporter\Contracts\ExporterInt
     /**
      * BasicExporter constructor.
      *
-     * @param array                         $exportedData Exported data array parameter.
-     * @param Contracts\DataSourceInterface $targetObject Data target object parameter.
+     * @param array                          $exportedData    Exported data array parameter.
+     * @param Contracts\TableEntityInterface $targetEntityObj Data target object parameter.
      */
-    public function __construct(array $exportedData = [], Contracts\DataSourceInterface $targetObject = null)
+    public function __construct(array $exportedData = [], Contracts\TableEntityInterface $targetEntityObj = null)
     {
         $this->setExportedData($exportedData);
-        $this->setTargetObject($targetObject);
+        $this->setTargetEntity($targetEntityObj);
     }
 
     /**
      * Do export the source data to target.
      *
+     * @throws \Bridge\Components\Exporter\ExporterException If target entity object still not assigned.
+     *
      * @return void
      */
     public function doExport()
     {
-        if ($this->getTargetObject() === null) {
-            die('Please assign the target object to the exporter');
+        if ($this->getTargetEntityObject() === null) {
+            throw new \Bridge\Components\Exporter\ExporterException('Please assign the target object to the exporter');
         }
-        $this->getTargetObject()->doMassImport($this->getExportedData());
+        $this->getTargetEntityObject()->doMassImport($this->getExportedData());
     }
 
     /**
@@ -115,13 +117,13 @@ class BasicExporter implements \Bridge\Components\Exporter\Contracts\ExporterInt
     }
 
     /**
-     * Get exporter target object property.
+     * Get exporter target entity instance property.
      *
-     * @return \Bridge\Components\Exporter\Contracts\DataSourceInterface
+     * @return \Bridge\Components\Exporter\Contracts\TableEntityInterface
      */
-    public function getTargetObject()
+    public function getTargetEntityObject()
     {
-        return $this->TargetObject;
+        return $this->TargetEntity;
     }
 
     /**
@@ -139,13 +141,13 @@ class BasicExporter implements \Bridge\Components\Exporter\Contracts\ExporterInt
     /**
      * Set exporter target object property.
      *
-     * @param \Bridge\Components\Exporter\Contracts\DataSourceInterface $targetObject Target object parameter.
+     * @param Contracts\TableEntityInterface $targetEntityObj Target entity parameter.
      *
      * @return void
      */
-    public function setTargetObject(\Bridge\Components\Exporter\Contracts\DataSourceInterface $targetObject)
+    public function setTargetEntity(Contracts\TableEntityInterface $targetEntityObj)
     {
-        $this->TargetObject = $targetObject;
+        $this->TargetEntity = $targetEntityObj;
     }
 
     /**

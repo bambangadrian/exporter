@@ -80,6 +80,7 @@ class ExcelDataSource extends \Bridge\Components\Exporter\AbstractDataSource
         if ($this->getFieldReadFilter() === null) {
             $this->setFieldReadFilter(1);
         }
+        $this->getExcelFileObject()->setLoadedSheets($this->getLoadedEntities());
         $this->getExcelFileObject()->doRead();
         $excelFileDataArr = $this->getExcelFileObject()->getData();
         if (array_key_exists('worksheets', $excelFileDataArr) === true) {

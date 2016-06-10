@@ -40,4 +40,24 @@ class PostgreSqlHandler extends \Bridge\Components\Exporter\Database\AbstractDat
             throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
         }
     }
+
+    /**
+     * Get field type mapper data property.
+     *
+     * @return array
+     */
+    public function getFieldTypeMapper()
+    {
+        return [
+            'integer'    => 'number',
+            'text'       => 'string',
+            'float'      => 'number',
+            'bigint'     => 'number',
+            'smallint'   => 'number',
+            'decimal'    => 'number',
+            'datetime'   => 'date',
+            'time'       => 'string',
+            'datetimetz' => 'string'
+        ];
+    }
 }

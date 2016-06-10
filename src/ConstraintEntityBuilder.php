@@ -48,15 +48,15 @@ class ConstraintEntityBuilder extends \Bridge\Components\Exporter\AbstractEntity
     /**
      * ConstraintEntityBuilder constructor.
      *
-     * @param \Bridge\Components\Exporter\Contracts\DataSourceInterface $dataSource Data source instance parameter.
+     * @param \Bridge\Components\Exporter\Contracts\DataSourceInterface $dataSourceObj Data source instance parameter.
      *
      * @throws \Bridge\Components\Exporter\ExporterException If any error raised when constructing the object.
      */
-    public function __construct(\Bridge\Components\Exporter\Contracts\DataSourceInterface $dataSource)
+    public function __construct(\Bridge\Components\Exporter\Contracts\DataSourceInterface $dataSourceObj)
     {
         try {
             $this->setRequiredFields(['fieldName', 'required', 'fieldType', 'fieldLength']);
-            parent::__construct($dataSource);
+            parent::__construct($dataSourceObj);
         } catch (\Exception $ex) {
             throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
         }
@@ -84,10 +84,10 @@ class ConstraintEntityBuilder extends \Bridge\Components\Exporter\AbstractEntity
         $entityCollection = [];
         foreach ($entitiesData as $entityName => $entityData) {
             # Create a table source as the data source for entity.
-            $entityObj = new \Bridge\Components\Exporter\ConstraintEntity($entityName);
+            $entityObj = new \Bridge\Components\Exporter\ConstraintEntity($entityName, $this->getDataSourceObject());
             $entityObj->setData($entityData);
             foreach ((array)$entityData as $fieldData) {
-                $fieldType = $this->getFieldTypeMap($fieldData['fieldType']);
+                $fieldType = $this->getMappedFieldType($fieldData['fieldType']);
                 $fieldLength = $fieldData['fieldLength'];
                 if ($this->getDataSourceType() === 'excel' and $fieldType === 'enum') {
                     $fieldLength = json_decode(
@@ -158,6 +158,33 @@ class ConstraintEntityBuilder extends \Bridge\Components\Exporter\AbstractEntity
     public function getFieldTypeMapper()
     {
         return $this->FieldTypeMapper;
+    }
+
+    /**
+     * Get mapped field type.
+     *
+     * @param string $fieldType Field type parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException Invalid field type given.
+     *
+     * @return string
+     */
+    public function getMappedFieldType($fieldType)
+    {
+        try {
+            if ($this->validateFieldTypeMapper() === true and
+                array_key_exists($fieldType, $this->getFieldTypeMapper()) === true
+            ) {
+                $fieldType = $this->getFieldTypeMapper()[$fieldType];
+            }
+            $validType = \Bridge\Components\Exporter\FieldTypes\FieldTypesFactory::$AllowedTypeList;
+            if (in_array($fieldType, $validType, true) === false) {
+                throw new \Bridge\Components\Exporter\ExporterException('Invalid field type given: ' . $fieldType);
+            }
+        } catch (\Exception $ex) {
+            throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
+        }
+        return $fieldType;
     }
 
     /**
@@ -250,33 +277,6 @@ class ConstraintEntityBuilder extends \Bridge\Components\Exporter\AbstractEntity
     }
 
     /**
-     * Get mapped field type.
-     *
-     * @param string $fieldType Field type parameter.
-     *
-     * @throws \Bridge\Components\Exporter\ExporterException Invalid field type given.
-     *
-     * @return string
-     */
-    protected function getFieldTypeMap($fieldType)
-    {
-        try {
-            if ($this->validateFieldTypeMapper() === true and
-                ($mappedType = array_search($fieldType, $this->getFieldTypeMapper(), true)) !== false
-            ) {
-                $fieldType = $mappedType;
-            }
-            $validType = \Bridge\Components\Exporter\FieldTypes\FieldTypesFactory::$AllowedTypeList;
-            if (in_array($fieldType, $validType, true) === false) {
-                throw new \Bridge\Components\Exporter\ExporterException('Invalid field type given: ' . $fieldType);
-            }
-        } catch (\Exception $ex) {
-            throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
-        }
-        return $fieldType;
-    }
-
-    /**
      * Validate the field mapper property.
      *
      * @throws \Bridge\Components\Exporter\ExporterException If invalid field mapper array data given.
@@ -305,7 +305,7 @@ class ConstraintEntityBuilder extends \Bridge\Components\Exporter\AbstractEntity
     {
         $validType = \Bridge\Components\Exporter\FieldTypes\FieldTypesFactory::$AllowedTypeList;
         if (count($this->getFieldTypeMapper()) > 0 and
-            count(array_diff(array_keys($this->getFieldTypeMapper()), $validType)) !== 0
+            count(array_diff($this->getFieldTypeMapper(), $validType)) !== 0
         ) {
             throw new \Bridge\Components\Exporter\ExporterException('Invalid field type mapper array data given');
         }

@@ -29,30 +29,39 @@ abstract class AbstractEntity implements \Bridge\Components\Exporter\Contracts\E
      *
      * @var array $Data
      */
-    private $Data;
+    protected $Data;
+
+    /**
+     * Data source instance that own the entity.
+     *
+     * @var \Bridge\Components\Exporter\Contracts\DataSourceInterface $DataSource
+     */
+    protected $DataSource;
 
     /**
      * Fields data property.
      *
      * @var array $Fields
      */
-    private $Fields;
+    protected $Fields;
 
     /**
      * Entity name property.
      *
      * @var string $Name
      */
-    private $Name;
+    protected $Name;
 
     /**
      * AbstractEntity constructor.
      *
-     * @param string $entityName Entity name parameter.
+     * @param string                                                    $entityName    Entity name parameter.
+     * @param \Bridge\Components\Exporter\Contracts\DataSourceInterface $dataSourceObj Data source instance parameter.
      */
-    public function __construct($entityName)
+    public function __construct($entityName, \Bridge\Components\Exporter\Contracts\DataSourceInterface $dataSourceObj)
     {
         $this->setName($entityName);
+        $this->DataSource = $dataSourceObj;
     }
 
     /**
@@ -79,9 +88,21 @@ abstract class AbstractEntity implements \Bridge\Components\Exporter\Contracts\E
     }
 
     /**
+     * Get data source instance.
+     *
+     * @return \Bridge\Components\Exporter\Contracts\DataSourceInterface
+     */
+    public function getDataSourceObject()
+    {
+        return $this->DataSource;
+    }
+
+    /**
      * Get selected field property.
      *
      * @param string $fieldName Field name parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If field name not found on the entity.
      *
      * @return \Bridge\Components\Exporter\Contracts\FieldElementInterface
      */
@@ -90,7 +111,7 @@ abstract class AbstractEntity implements \Bridge\Components\Exporter\Contracts\E
         if (array_key_exists($fieldName, $this->Fields) === true) {
             return $this->Fields[$fieldName];
         }
-        return null;
+        throw new \Bridge\Components\Exporter\ExporterException('Field name not found on the entity: ' . $fieldName);
     }
 
     /**

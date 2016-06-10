@@ -35,20 +35,32 @@ class TableEntity extends \Bridge\Components\Exporter\AbstractEntity implements
     /**
      * TableEntity constructor.
      *
-     * @param string                                                          $entityName          Entity name
-     *                                                                                             parameter.
-     * @param \Bridge\Components\Exporter\Contracts\ConstraintEntityInterface $constraintEntityObj Constraint entity
-     *                                                                                             object parameter.
+     * @param string                              $entityName          Entity name parameter.
+     * @param Contracts\DataSourceInterface       $dataSourceObj       Data source instance parameter.
+     * @param Contracts\ConstraintEntityInterface $constraintEntityObj Constraint entity object parameter.
      */
     public function __construct(
         $entityName,
-        \Bridge\Components\Exporter\Contracts\ConstraintEntityInterface $constraintEntityObj = null
+        Contracts\DataSourceInterface $dataSourceObj,
+        Contracts\ConstraintEntityInterface $constraintEntityObj = null
     ) {
         if ($constraintEntityObj !== null) {
             $this->setConstraintEntityObject($constraintEntityObj);
             $constraintEntityObj->validateTableEntityData($this);
         }
-        parent::__construct($entityName);
+        parent::__construct($entityName, $dataSourceObj);
+    }
+
+    /**
+     * Delete the selected table entity record row.
+     *
+     * @param array $condition Condition to select the specific row.
+     *
+     * @return boolean
+     */
+    public function deleteRow(array $condition)
+    {
+        # TODO: Implement deleteRow() method.
     }
 
     /**
@@ -69,6 +81,31 @@ class TableEntity extends \Bridge\Components\Exporter\AbstractEntity implements
     public function hasConstraint()
     {
         return ($this->getConstraintEntityObject() !== null);
+    }
+
+    /**
+     * Insert new table entity record row from data collection.
+     *
+     * @param array $data Data that will be inserted.
+     *
+     * @return boolean
+     */
+    public function insertRow(array $data)
+    {
+        # TODO: Implement insertRow() method.
+    }
+
+    /**
+     * Update table entity record row.
+     *
+     * @param array $data      Data that will be updated.
+     * @param array $condition Condition to select the specific row.
+     *
+     * @return boolean
+     */
+    public function updateRow(array $data, array $condition)
+    {
+        # TODO: Implement updateRow() method.
     }
 
     /**

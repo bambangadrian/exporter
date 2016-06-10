@@ -41,19 +41,19 @@ class TableEntityBuilder extends \Bridge\Components\Exporter\AbstractEntityBuild
     /**
      * TableEntityBuilder constructor.
      *
-     * @param \Bridge\Components\Exporter\Contracts\DataSourceInterface $dataSource  Data source instance parameter.
-     * @param array                                                     $constraints Constraint entity instance
-     *                                                                               collection data parameter.
+     * @param \Bridge\Components\Exporter\Contracts\DataSourceInterface $dataSourceObj Data source instance parameter.
+     * @param array                                                     $constraints   Constraint entity instance
+     *                                                                                 collection data parameter.
      *
      * @throws \Bridge\Components\Exporter\ExporterException If any error raised when construct and build the object.
      */
     public function __construct(
-        \Bridge\Components\Exporter\Contracts\DataSourceInterface $dataSource,
+        \Bridge\Components\Exporter\Contracts\DataSourceInterface $dataSourceObj,
         array $constraints = []
     ) {
         try {
+            parent::__construct($dataSourceObj);
             $this->setConstraints($constraints);
-            parent::__construct($dataSource);
         } catch (\Exception $ex) {
             throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
         }
@@ -80,7 +80,11 @@ class TableEntityBuilder extends \Bridge\Components\Exporter\AbstractEntityBuild
         foreach ($entitiesData as $entityName => $entityData) {
             # Create a table source as the data source for entity.
             $constraintEntityObj = $this->getConstraint($entityName);
-            $entityObj = new \Bridge\Components\Exporter\TableEntity($entityName, $constraintEntityObj);
+            $entityObj = new \Bridge\Components\Exporter\TableEntity(
+                $entityName,
+                $this->getDataSourceObject(),
+                $constraintEntityObj
+            );
             # Set the fields into entity.
             $fields = (array)$dataSourceFields[$entityName];
             # Get the specific entity field constraint mapper.
@@ -94,7 +98,10 @@ class TableEntityBuilder extends \Bridge\Components\Exporter\AbstractEntityBuild
                     if (count($fieldConstraintMapperData) > 0 and
                         ($mappedFieldKey = array_search($field, $fieldConstraintMapperData, true)) !== false
                     ) {
-                        $fieldObj->setConstraints($constraintEntityObj->getField($mappedFieldKey)->getConstraints());
+                        $field = $mappedFieldKey;
+                    }
+                    if ($constraintEntityObj instanceof \Bridge\Components\Exporter\ConstraintEntity) {
+                        $fieldObj->setConstraints($constraintEntityObj->getField($field)->getConstraints());
                     }
                     $entityObj->addField($fieldObj);
                 }
@@ -107,6 +114,23 @@ class TableEntityBuilder extends \Bridge\Components\Exporter\AbstractEntityBuild
         }
         $this->Entities = $entityCollection;
         # Run the build entities procedure.
+    }
+
+    /**
+     * Get the specific constraint instance that registered on constraints data collection.
+     *
+     * @param string $constraintEntityName Constraint entity name parameter.
+     *
+     * @return \Bridge\Components\Exporter\Contracts\ConstraintEntityInterface
+     */
+    public function getConstraint($constraintEntityName)
+    {
+        if (count($this->getConstraints()) > 0 and
+            array_key_exists($constraintEntityName, $this->getConstraints()) === true
+        ) {
+            return $this->getConstraints()[$constraintEntityName];
+        }
+        return null;
     }
 
     /**
@@ -175,22 +199,5 @@ class TableEntityBuilder extends \Bridge\Components\Exporter\AbstractEntityBuild
     public function setFieldConstraintMapper($fieldConstraintMapper)
     {
         $this->FieldConstraintMapper = $fieldConstraintMapper;
-    }
-
-    /**
-     * Get the specific constraint instance that registered on constraints data collection.
-     *
-     * @param string $constraintEntityName Constraint entity name parameter.
-     *
-     * @return \Bridge\Components\Exporter\Contracts\ConstraintEntityInterface
-     */
-    protected function getConstraint($constraintEntityName)
-    {
-        if (count($this->getConstraints()) > 0 and
-            array_key_exists($constraintEntityName, $this->getConstraints()) === true
-        ) {
-            return $this->getConstraints()[$constraintEntityName];
-        }
-        return null;
     }
 }

@@ -30,3 +30,4 @@ if (function_exists('debug') === false) {
         }
     }
 }
+$arr = ['dataBambang', 'Data Bambang', 'data Bambang'];

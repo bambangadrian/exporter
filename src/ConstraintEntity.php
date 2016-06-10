@@ -32,7 +32,6 @@ class ConstraintEntity extends \Bridge\Components\Exporter\AbstractEntity implem
      */
     private $TableEntity;
 
-
     /**
      * Get the table entity object that owned the constraint instance.
      *
@@ -42,8 +41,6 @@ class ConstraintEntity extends \Bridge\Components\Exporter\AbstractEntity implem
     {
         return $this->TableEntity;
     }
-
-
 
     /**
      * Validate the table entity data.

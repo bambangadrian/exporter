@@ -134,28 +134,20 @@ $mapperObject->doMapping();
 # Get the mapper result.
 $matcherResult = $mapperObject->getMappedData();
 # -------------------------------------------------------------------------------------
+$connectionConfig = [
+    'dbname'   => 'exporter',
+    'user'     => 'postgres',
+    'password' => 'postgres',
+    'host'     => 'localhost'
+];
 # Mock-up for data source connection (DB access layer).
-$exportTarget = new \Bridge\Components\Exporter\DbDataSource();
+$dbHandler = new \Bridge\Components\Exporter\Database\PostgreSqlHandler($connectionConfig);
+$exportTarget = new \Bridge\Components\Exporter\DbDataSource($dbHandler);
 # Mock-up for run the exporter process.
 $exporter = new \Bridge\Components\Exporter\BasicExporter();
 $exporter->setExportedData($matcherResult);
 # Mock-up for exporter process.
-$exporter->setTargetObject($exportTarget);
+$exporter->setTargetEntity($exportTarget);
 $exporter->doExport();
-$exporter->getStatus();
+debug($exporter->getStatus());
 $exporter->getLog();
-# ---------------------------------------------------------------------------------------
-# Sample use of doctrine.
-$config = new \Doctrine\DBAL\Configuration();
-$conn = \Doctrine\DBAL\DriverManager::getConnection($connectionConfig, $config);
-$sql = 'SELECT * FROM  public."testTable"';
-$stmt = $conn->query($sql); // Simple, but has several drawbacks
-while (($row = $stmt->fetch()) !== false) {
-    debug($row);
-}
-$sm = $conn->getSchemaManager();
-$columns = $sm->listTableColumns('testTable');
-foreach ($columns as $column) {
-    echo $column->getName() . ': ' . $column->getType() . "\n";
-}
-debug($columns);

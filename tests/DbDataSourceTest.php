@@ -12,12 +12,22 @@
  */
 include_once 'TestBootstrap.php';
 $connectionConfig = [
-    'dbname'   => 'exporter',
+    'dbname'   => 'devosa',
     'user'     => 'postgres',
     'password' => 'postgres',
     'host'     => 'localhost'
 ];
 $dbHandler = new \Bridge\Components\Exporter\Database\PostgreSqlHandler($connectionConfig);
 $dbDataSource = new \Bridge\Components\Exporter\DbDataSource($dbHandler);
-$standardDataSource = new \Bridge\Components\Exporter\StandardDataSource($dbDataSource);
-debug($standardDataSource->getData());
+$dbDataSource->setLoadedEntities(['hrd_employee']);
+# Create the entity target builder object.
+$dbEntityBuilder = new \Bridge\Components\Exporter\TableEntityBuilder(
+    $dbDataSource,
+    $dbDataSource->getConstraintEntities()
+);
+# Build the target entities.
+$dbEntityBuilder->doBuild();
+//debug($dbEntityBuilder->getEntities());
+# Get specific table entity instance.
+$dbEntity = $dbEntityBuilder->getEntity('hrd_employee');
+debug($dbEntity->getData());
