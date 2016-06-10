@@ -12,12 +12,12 @@
  */
 include_once 'DataMapperTest.php';
 include_once 'DbDataSourceTest.php';
-debug($mapperResult);
 # Mock-up for run the exporter process.
 $exporter = new \Bridge\Components\Exporter\BasicExporter();
 $exporter->setExportedData($mapperResult);
 # Mock-up for exporter process.
-$exporter->setTargetEntity($dbDataSource);
+debug($dbEntity);
+$exporter->setTargetEntity($dbEntity);
 $exporter->doExport();
 debug($exporter->getStatus());
 debug($exporter->getLog());

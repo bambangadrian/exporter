@@ -54,13 +54,51 @@ class TableEntity extends \Bridge\Components\Exporter\AbstractEntity implements
     /**
      * Delete the selected table entity record row.
      *
-     * @param array $condition Condition to select the specific row.
+     * @param array $conditions Condition to select the specific row.
      *
-     * @return boolean
+     * @throws \Bridge\Components\Exporter\ExporterException If searched field column does not exists.
+     *
+     * @return void
      */
-    public function deleteRow(array $condition)
+    public function doDeleteRow(array $conditions)
     {
-        # TODO: Implement deleteRow() method.
+        $deletedRowIndexes = $this->getRowIndex($conditions);
+        foreach ($deletedRowIndexes as $rowIndex) {
+            unset($this->Data[$rowIndex]);
+        }
+    }
+
+    /**
+     * Insert new table entity record row from data collection.
+     *
+     * @param array $data Data that will be inserted.
+     *
+     * @return void
+     */
+    public function doInsertRow(array $data)
+    {
+        $fields = array_keys($this->getFields());
+        $this->Data[] = array_merge(array_fill_keys($fields, null), $data);
+    }
+
+    /**
+     * Update table entity record row.
+     *
+     * @param array $data       Data that will be updated.
+     * @param array $conditions Condition to select the specific row.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If searched field column does not exists.
+     *
+     * @return void
+     */
+    public function doUpdateRow(array $data, array $conditions)
+    {
+        $updatedRowIndexes = $this->getRowIndex($conditions);
+        foreach ($updatedRowIndexes as $rowIndex) {
+            foreach ($data as $column => $value) {
+                $this->Data[$rowIndex][$column] = $value;
+            }
+        }
     }
 
     /**
@@ -84,28 +122,40 @@ class TableEntity extends \Bridge\Components\Exporter\AbstractEntity implements
     }
 
     /**
-     * Insert new table entity record row from data collection.
+     * Get row index number on table entity data collection that match the given condition.
      *
-     * @param array $data Data that will be inserted.
+     * @param array $conditions Condition to select the specific row.
      *
-     * @return boolean
+     * @throws \Bridge\Components\Exporter\ExporterException If searched field column does not exists.
+     *
+     * @return array
      */
-    public function insertRow(array $data)
+    protected function getRowIndex(array $conditions)
     {
-        # TODO: Implement insertRow() method.
-    }
-
-    /**
-     * Update table entity record row.
-     *
-     * @param array $data      Data that will be updated.
-     * @param array $condition Condition to select the specific row.
-     *
-     * @return boolean
-     */
-    public function updateRow(array $data, array $condition)
-    {
-        # TODO: Implement updateRow() method.
+        $data = $this->getData();
+        $fields = array_keys($this->getFields());
+        $rowIndexes = [];
+        foreach ($data as $rowIndex => $row) {
+            $found = false;
+            foreach ($conditions as $conditionField => $conditionValue) {
+                if (in_array($conditionField, $fields, true) === false) {
+                    throw new \Bridge\Components\Exporter\ExporterException(
+                        'Searched field column does not exists: ' . $conditionField
+                    );
+                }
+                if (in_array($conditionField, $fields, true) === true and
+                    $row[$conditionField] !== $conditionValue
+                ) {
+                    $found = false;
+                    break;
+                }
+                $found = true;
+            }
+            if ($found === true) {
+                $rowIndexes[] = $rowIndex;
+            }
+        }
+        return $rowIndexes;
     }
 
     /**

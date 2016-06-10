@@ -10,34 +10,26 @@
  * @version   GIT: $Id$
  * @link      -
  */
-namespace Bridge\Components\Exporter;
+namespace Bridge\Components\Exporter\Contracts;
 
 /**
- * BaseDataSource class description.
+ * ExporterHandlerInterface class description.
  *
  * @package    Components
- * @subpackage Exporter
+ * @subpackage Exporter\Contracts
  * @author     Bambang Adrian Sitompul <bambang.adrian@gmail.com>
  * @copyright  2016 -
  * @release    $Revision$
  */
-class StandardDataSource extends \Bridge\Components\Exporter\AbstractDataSourceDecorator
+interface ExporterHandlerInterface
 {
 
     /**
-     * Standard data result property.
+     * Do mass import to data source.
      *
-     * @var array $StandardData
-     */
-    private $StandardData;
-
-    /**
-     * Get standard data property.
+     * @param array $data Data collection that will be imported.
      *
-     * @return array
+     * @return void
      */
-    public function getStandardData()
-    {
-        return $this->StandardData;
-    }
+    public function doMassImport(array $data);
 }

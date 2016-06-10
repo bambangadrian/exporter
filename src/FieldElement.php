@@ -280,7 +280,7 @@ class FieldElement implements \Bridge\Components\Exporter\Contracts\FieldElement
     {
         $fieldTypeDataTemplate = ['type' => null, 'length' => null, 'default' => null];
         $fieldTypeData = array_merge($fieldTypeDataTemplate, $fieldTypeData);
-        $fieldTypeFactory = new \Bridge\Components\Exporter\FieldTypes\FieldTypesFactory();
+        $fieldTypeFactory = new \Bridge\Components\Exporter\FieldTypes\FieldTypeFactory();
         try {
             $fieldTypeObject = $fieldTypeFactory->createType(
                 $fieldTypeData['type'],

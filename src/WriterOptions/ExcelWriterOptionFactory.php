@@ -21,7 +21,7 @@ namespace Bridge\Components\Exporter\WriterOptions;
  * @copyright  2016 -
  * @release    $Revision$
  */
-class ExcelWriterOptionFactory
+class ExcelWriterOptionFactory implements \Bridge\Components\Exporter\Contracts\FactoryInterface
 {
 
     /**
@@ -46,5 +46,15 @@ class ExcelWriterOptionFactory
             throw new \Bridge\Components\Exporter\ExporterException('Cannot create the options instance');
         }
         return new $objWriterFullName($objWriter, $options);
+    }
+
+    /**
+     * Get factory name property.
+     *
+     * @return string
+     */
+    public function getFactoryName()
+    {
+        return 'ExcelWriterOptionFactory';
     }
 }

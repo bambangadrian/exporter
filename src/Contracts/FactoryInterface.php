@@ -10,34 +10,24 @@
  * @version   GIT: $Id$
  * @link      -
  */
-namespace Bridge\Components\Exporter;
+namespace Bridge\Components\Exporter\Contracts;
 
 /**
- * BaseDataSource class description.
+ * FactoryInterface class description.
  *
  * @package    Components
- * @subpackage Exporter
+ * @subpackage Exporter\Contracts
  * @author     Bambang Adrian Sitompul <bambang.adrian@gmail.com>
  * @copyright  2016 -
  * @release    $Revision$
  */
-class StandardDataSource extends \Bridge\Components\Exporter\AbstractDataSourceDecorator
+interface FactoryInterface
 {
 
     /**
-     * Standard data result property.
+     * Get factory name property.
      *
-     * @var array $StandardData
+     * @return string
      */
-    private $StandardData;
-
-    /**
-     * Get standard data property.
-     *
-     * @return array
-     */
-    public function getStandardData()
-    {
-        return $this->StandardData;
-    }
+    public function getFactoryName();
 }

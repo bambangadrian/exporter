@@ -115,25 +115,6 @@ class ExcelDataSource extends \Bridge\Components\Exporter\AbstractDataSource
     }
 
     /**
-     * Update data set.
-     *
-     * @param array $data Data that will be updated into data source.
-     *
-     * @throws \Bridge\Components\Exporter\ExporterException If failed to set grid data or writing the changes.
-     *
-     * @return void
-     */
-    public function doMassImport(array $data)
-    {
-        try {
-            $this->getExcelFileObject()->setGrid($data);
-            $this->getExcelFileObject()->doSave();
-        } catch (\Exception $ex) {
-            throw new \Bridge\Components\Exporter\ExporterException('Failed to do mass import: ' . $ex->getMessage());
-        }
-    }
-
-    /**
      * Set field read filter object property.
      *
      * @param integer $startRow  Field row number parameter.

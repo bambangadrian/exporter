@@ -57,7 +57,8 @@ class PostgreSqlHandler extends \Bridge\Components\Exporter\Database\AbstractDat
             'decimal'    => 'number',
             'datetime'   => 'date',
             'time'       => 'string',
-            'datetimetz' => 'string'
+            'datetimetz' => 'string',
+            'real'       => 'number'
         ];
     }
 }

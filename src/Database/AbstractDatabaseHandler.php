@@ -21,7 +21,9 @@ namespace Bridge\Components\Exporter\Database;
  * @copyright  2016 -
  * @release    $Revision$
  */
-abstract class AbstractDatabaseHandler implements \Bridge\Components\Exporter\Contracts\DatabaseHandlerInterface
+abstract class AbstractDatabaseHandler implements
+    \Bridge\Components\Exporter\Contracts\DatabaseHandlerInterface,
+    \Bridge\Components\Exporter\Contracts\ExporterHandlerInterface
 {
 
     /**
@@ -333,7 +335,7 @@ abstract class AbstractDatabaseHandler implements \Bridge\Components\Exporter\Co
             ) {
                 $fieldType = $this->getFieldTypeMapper()[$fieldType];
             }
-            $validType = \Bridge\Components\Exporter\FieldTypes\FieldTypesFactory::$AllowedTypeList;
+            $validType = \Bridge\Components\Exporter\FieldTypes\FieldTypeFactory::$AllowedTypeList;
             if (in_array($fieldType, $validType, true) === false) {
                 throw new \Bridge\Components\Exporter\ExporterException('Invalid field type given: ' . $fieldType);
             }
@@ -443,7 +445,7 @@ abstract class AbstractDatabaseHandler implements \Bridge\Components\Exporter\Co
      */
     protected function validateFieldTypeMapper()
     {
-        $validType = \Bridge\Components\Exporter\FieldTypes\FieldTypesFactory::$AllowedTypeList;
+        $validType = \Bridge\Components\Exporter\FieldTypes\FieldTypeFactory::$AllowedTypeList;
         if (count($this->getFieldTypeMapper()) > 0 and
             count(array_diff($this->getFieldTypeMapper(), $validType)) !== 0
         ) {

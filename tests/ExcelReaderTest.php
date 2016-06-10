@@ -14,6 +14,7 @@ include_once 'TestBootstrap.php';
 # Mock-up for excel file.
 # Using read mode.
 $excelFile = new \Bridge\Components\Exporter\BasicExcelFile('../resources/files/Constraints/MasterData.xlsx');
+$excelFile->setLoadedSheets(['hrd_company']);
 $fieldFilter = new \Bridge\Components\Exporter\ExcelEntityFieldsReadFilter(1, range('A', 'D'), 'hrd_company');
 $rowFilter = new \Bridge\Components\Exporter\ExcelEntityRecordReadFilter($fieldFilter);
 $excelFile->doRead($fieldFilter);

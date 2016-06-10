@@ -53,6 +53,13 @@ interface ExporterInterface
     public function doExport();
 
     /**
+     * Get exporter handler instance.
+     *
+     * @return \Bridge\Components\Exporter\Contracts\ExporterHandlerInterface
+     */
+    public function getExporterHandlerObject();
+
+    /**
      * Get log data property.
      *
      * @return array

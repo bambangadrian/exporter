@@ -177,7 +177,7 @@ class ConstraintEntityBuilder extends \Bridge\Components\Exporter\AbstractEntity
             ) {
                 $fieldType = $this->getFieldTypeMapper()[$fieldType];
             }
-            $validType = \Bridge\Components\Exporter\FieldTypes\FieldTypesFactory::$AllowedTypeList;
+            $validType = \Bridge\Components\Exporter\FieldTypes\FieldTypeFactory::$AllowedTypeList;
             if (in_array($fieldType, $validType, true) === false) {
                 throw new \Bridge\Components\Exporter\ExporterException('Invalid field type given: ' . $fieldType);
             }
@@ -303,7 +303,7 @@ class ConstraintEntityBuilder extends \Bridge\Components\Exporter\AbstractEntity
      */
     protected function validateFieldTypeMapper()
     {
-        $validType = \Bridge\Components\Exporter\FieldTypes\FieldTypesFactory::$AllowedTypeList;
+        $validType = \Bridge\Components\Exporter\FieldTypes\FieldTypeFactory::$AllowedTypeList;
         if (count($this->getFieldTypeMapper()) > 0 and
             count(array_diff($this->getFieldTypeMapper(), $validType)) !== 0
         ) {

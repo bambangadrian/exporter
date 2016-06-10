@@ -52,18 +52,6 @@ abstract class AbstractDataSourceDecorator implements \Bridge\Components\Exporte
     }
 
     /**
-     * Do mass import data set.
-     *
-     * @param array $data Data that will be updated.
-     *
-     * @return void
-     */
-    public function doMassImport(array $data)
-    {
-        $this->DataSourceInstance->doMassImport($data);
-    }
-
-    /**
      * Get resource data.
      *
      * @param array $entityFilter Selected entity collection that will be parsed.

@@ -21,7 +21,10 @@ namespace Bridge\Components\Exporter;
  * @copyright  2016 -
  * @release    $Revision$
  */
-abstract class AbstractExcelFile implements Contracts\ExcelReaderInterface, Contracts\ExcelWriterInterface
+abstract class AbstractExcelFile implements
+    \Bridge\Components\Exporter\Contracts\ExcelReaderInterface,
+    \Bridge\Components\Exporter\Contracts\ExcelWriterInterface,
+    \Bridge\Components\Exporter\Contracts\ExporterHandlerInterface
 {
 
     /**

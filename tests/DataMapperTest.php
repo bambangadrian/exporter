@@ -17,6 +17,7 @@ include_once 'TestBootstrap.php';
 $constraintDataSource = new \Bridge\Components\Exporter\ExcelDataSource(
     '../resources/files/Constraints/MasterData.xlsx'
 );
+$constraintDataSource->setLoadedEntities(['hrd_bank']);
 $constraintBuilder = new \Bridge\Components\Exporter\ConstraintEntityBuilder($constraintDataSource);
 # Set the field mapper to constraint entity builder.
 $fieldMapper = [
@@ -46,6 +47,7 @@ $constraintEntityObject = $constraintBuilder->getEntity('hrd_bank');
 $sourceData = new \Bridge\Components\Exporter\ExcelDataSource(
     '../resources/files/Master Data/hrd_bank.xlsx'
 );
+$sourceData->setLoadedEntities(['hrd_bank']);
 # Mock-up for table entity builder.
 $entitySourceBuilder = new \Bridge\Components\Exporter\TableEntityBuilder($sourceData, $constraintEntities);
 $fieldConstraintMapper = [
@@ -64,6 +66,7 @@ $entitySourceObject = $entitySourceBuilder->getEntity('hrd_bank');
 $targetData = new \Bridge\Components\Exporter\ExcelDataSource(
     '../resources/files/Customer Data/hrd_bank_customer.xlsx'
 );
+$targetData->setLoadedEntities(['hrd_bank']);
 $targetData->setFieldReadFilter(4);
 # Create the entity target builder object.
 $entityTargetBuilder = new \Bridge\Components\Exporter\TableEntityBuilder($targetData);
@@ -88,4 +91,4 @@ $mapperObject->setFieldMapperData($fieldMapperData);
 $mapperObject->doMapping();
 # Get the mapper result.
 $mapperResult = $mapperObject->getMappedData();
-//debug($mapperResult);
+debug($mapperResult);

@@ -13,7 +13,7 @@
 namespace Bridge\Components\Exporter\FieldTypes;
 
 /**
- * FieldTypesFactory class description.
+ * FieldTypeFactory class description.
  *
  * @package    Components
  * @subpackage Exporter\FieldTypes
@@ -21,7 +21,7 @@ namespace Bridge\Components\Exporter\FieldTypes;
  * @copyright  2016 -
  * @release    $Revision$
  */
-class FieldTypesFactory
+class FieldTypeFactory implements \Bridge\Components\Exporter\Contracts\FactoryInterface
 {
 
     /**
@@ -53,5 +53,15 @@ class FieldTypesFactory
             throw new \Bridge\Components\Exporter\ExporterException('Field type of : ' . $type . ' not found');
         }
         return new $className($fieldLength, $defaultValue);
+    }
+
+    /**
+     * Get factory name property.
+     *
+     * @return string
+     */
+    public function getFactoryName()
+    {
+        return 'FieldsTypesFactory';
     }
 }

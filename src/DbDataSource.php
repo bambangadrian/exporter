@@ -70,19 +70,6 @@ class DbDataSource extends \Bridge\Components\Exporter\AbstractDataSource
     }
 
     /**
-     * Do mass import data set.
-     *
-     * @param array $data Data that will be updated.
-     *
-     * @return void
-     */
-    public function doMassImport(array $data)
-    {
-        if ($this->validateImportData($data) === true) {
-        }
-    }
-
-    /**
      * Get constraint data property.
      *
      * @throws \Bridge\Components\Exporter\ExporterException If failed to build constraint entities.
@@ -143,16 +130,5 @@ class DbDataSource extends \Bridge\Components\Exporter\AbstractDataSource
             $constraintEntities[$entityName] = $constraintEntityObj;
         }
         $this->ConstraintEntities = $constraintEntities;
-    }
-
-    /**
-     * Validate import data before saving into database.
-     *
-     * @param array $data Import data collection parameter.
-     *
-     * @return boolean
-     */
-    private function validateImportData($data)
-    {
     }
 }
