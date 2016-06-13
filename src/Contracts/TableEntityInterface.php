@@ -34,6 +34,17 @@ interface TableEntityInterface extends \Bridge\Components\Exporter\Contracts\Ent
     public function doDeleteRow(array $conditions);
 
     /**
+     * Do import entity.
+     *
+     * @param \Bridge\Components\Exporter\Contracts\TableEntityInterface $exportedEntity Exported entity parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If invalid exported entity data structure found.
+     *
+     * @return void
+     */
+    public function doImport(\Bridge\Components\Exporter\Contracts\TableEntityInterface $exportedEntity);
+
+    /**
      * Insert new table entity record row from data collection.
      *
      * @param array $data Data that will be inserted.

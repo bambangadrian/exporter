@@ -118,7 +118,7 @@ $entityTargetBuilder->doBuild();
 $entityTargetObject = $entityTargetBuilder->getEntity('hrd_bank');
 # -------------------------------------------------------------------------------------------------------------
 # Create the mapper instance.
-$mapperObject = new \Bridge\Components\Exporter\DataMapper();
+$mapperObject = new \Bridge\Components\Exporter\EntityMapper();
 # Set the source entity instance.
 $mapperObject->setSourceEntity($entitySourceObject);
 # Set the target entity instance that will be mapped.
@@ -144,10 +144,7 @@ $connectionConfig = [
 $dbHandler = new \Bridge\Components\Exporter\Database\PostgreSqlHandler($connectionConfig);
 $exportTarget = new \Bridge\Components\Exporter\DbDataSource($dbHandler);
 # Mock-up for run the exporter process.
-$exporter = new \Bridge\Components\Exporter\BasicExporter();
-$exporter->setExportedData($matcherResult);
-# Mock-up for exporter process.
-$exporter->setTargetEntity($exportTarget);
+$exporter = new \Bridge\Components\Exporter\BasicExporter($mapperResultEntity, $dbEntity);
 $exporter->doExport();
 debug($exporter->getStatus());
-$exporter->getLog();
+debug($exporter->getLog());

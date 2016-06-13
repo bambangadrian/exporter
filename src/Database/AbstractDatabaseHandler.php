@@ -21,9 +21,7 @@ namespace Bridge\Components\Exporter\Database;
  * @copyright  2016 -
  * @release    $Revision$
  */
-abstract class AbstractDatabaseHandler implements
-    \Bridge\Components\Exporter\Contracts\DatabaseHandlerInterface,
-    \Bridge\Components\Exporter\Contracts\ExporterHandlerInterface
+abstract class AbstractDatabaseHandler implements \Bridge\Components\Exporter\Contracts\DatabaseHandlerInterface
 {
 
     /**
@@ -152,16 +150,18 @@ abstract class AbstractDatabaseHandler implements
             },
             $this->getLoadedTables()
         );
-        $tableList = $this->getSchemaManagerObject()->listTables();
+        $tableCollectionObject = $this->getSchemaManagerObject()->listTables();
+        $tables = [];
         $fields = [];
-        $sourceData = [];
+        $records = [];
         # Fetch all the fields from table list.
-        foreach ($tableList as $tableObj) {
+        foreach ($tableCollectionObject as $tableObj) {
             if (count($loadedTables) > 0 and
                 in_array(strtolower($tableObj->getName()), $loadedTables, true) === false
             ) {
                 continue;
             }
+            $tables[] = $tableObj;
             $columnCollection = $this->getSchemaManagerObject()->listTableColumns(
                 $tableObj->getName(),
                 $this->getDatabaseConnectionObject()->getDatabase()
@@ -172,13 +172,13 @@ abstract class AbstractDatabaseHandler implements
             # Fetch all the data grouped by table.
             $queryFetchData = 'SELECT * FROM "' . $tableObj->getName() . '"';
             $tableObj->getColumns();
-            $sourceData[$tableObj->getName()] = $this->getDatabaseConnectionObject()->fetchAll($queryFetchData);
+            $records[$tableObj->getName()] = $this->getDatabaseConnectionObject()->fetchAll($queryFetchData);
         }
         # Set the tables, and fields.
-        $this->Tables = $tableList;
+        $this->Tables = $tables;
         $this->Fields = $fields;
         # Set the source data.
-        $this->Data = $sourceData;
+        $this->Data = $records;
     }
 
     /**
@@ -296,6 +296,22 @@ abstract class AbstractDatabaseHandler implements
             }
         }
         return $this->Fields;
+    }
+
+    /**
+     * Do mass import to data source.
+     *
+     * @param array $data Data collection that will be imported.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If invalid exported data structure found.
+     *
+     * @return array
+     */
+    public function getFormattedImportData(array $data)
+    {
+        # Validate the imported data.
+        # Format the array data based on the handler requirement.
+        return $data;
     }
 
     /**

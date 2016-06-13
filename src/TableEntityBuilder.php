@@ -27,7 +27,7 @@ class TableEntityBuilder extends \Bridge\Components\Exporter\AbstractEntityBuild
     /**
      * Constraint instance property.
      *
-     * @var array $Constraints
+     * @var \Bridge\Components\Exporter\Contracts\ConstraintEntityInterface[] $Constraints
      */
     protected $Constraints = [];
 
@@ -136,7 +136,7 @@ class TableEntityBuilder extends \Bridge\Components\Exporter\AbstractEntityBuild
     /**
      * Get the constraint entities data collection property.
      *
-     * @return array
+     * @return \Bridge\Components\Exporter\Contracts\ConstraintEntityInterface[]
      */
     public function getConstraints()
     {
@@ -157,10 +157,10 @@ class TableEntityBuilder extends \Bridge\Components\Exporter\AbstractEntityBuild
     public function getEntity($entityName)
     {
         $entity = parent::getEntity($entityName);
-        if ($entity instanceof \Bridge\Components\Exporter\Contracts\TableEntityInterface === false) {
-            throw new \Bridge\Components\Exporter\ExporterException('Invalid table entity object format');
+        if ($entity instanceof \Bridge\Components\Exporter\Contracts\TableEntityInterface) {
+            return $entity;
         }
-        return $entity;
+        throw new \Bridge\Components\Exporter\ExporterException('Invalid table entity object format');
     }
 
     /**

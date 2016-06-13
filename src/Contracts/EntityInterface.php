@@ -27,9 +27,11 @@ interface EntityInterface
     /**
      * Get table entity data property.
      *
+     * @param array $fieldFilters Field filters data that will be retrieved from the entity data.
+     *
      * @return array
      */
-    public function getData();
+    public function getData(array $fieldFilters = []);
 
     /**
      * Get data source instance.

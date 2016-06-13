@@ -13,7 +13,7 @@
 namespace Bridge\Components\Exporter;
 
 /**
- * DataMapper class description.
+ * EntityMapper class description.
  *
  * @package    Components
  * @subpackage Exporter
@@ -21,7 +21,7 @@ namespace Bridge\Components\Exporter;
  * @copyright  2016 -
  * @release    $Revision$
  */
-class DataMapper implements \Bridge\Components\Exporter\Contracts\MapperInterface
+class EntityMapper implements \Bridge\Components\Exporter\Contracts\MapperInterface
 {
 
     /**
@@ -32,11 +32,11 @@ class DataMapper implements \Bridge\Components\Exporter\Contracts\MapperInterfac
     private $FieldMapperData;
 
     /**
-     * Result of data mapper processing.
+     * Entity result of data mapper processing.
      *
-     * @var array $Result
+     * @var \Bridge\Components\Exporter\Contracts\TableEntityInterface $ResultEntity
      */
-    private $Result;
+    private $ResultEntity;
 
     /**
      * Source entity object that will be used as the valid model.
@@ -89,7 +89,7 @@ class DataMapper implements \Bridge\Components\Exporter\Contracts\MapperInterfac
             # Map all the target data using the field data mapper and render into data collection.
             $fieldDataMapper = $this->getFieldMapperData();
             foreach ($targetData as $rowNumber => $rows) {
-                foreach ($fieldDataMapper as $sourceField => $targetField) {
+                foreach ($fieldDataMapper as $targetField => $sourceField) {
                     $result[$rowNumber][$sourceField] = $rows[$targetField];
                 }
             }
@@ -99,8 +99,22 @@ class DataMapper implements \Bridge\Components\Exporter\Contracts\MapperInterfac
             # If the mapping data is success and entity constraint has been defined then do:
             # Verify/check all the data type constraint for each field.
             $this->doValidateDataConstraint($result);
-            # Set the Result property content = the mapper result data.
-            $this->Result = $result;
+            # Setup the entity result using the builder.
+            $entityName = $this->getTargetEntityObject()->getName();
+            $resultData[$entityName] = $result;
+            $mapperEntityBuilder = new \Bridge\Components\Exporter\TableEntityBuilder(
+                new \Bridge\Components\Exporter\ArrayDataSource($resultData)
+            );
+            $mapperEntityBuilder->setFieldConstraintMapper([$entityName => $this->getFieldMapperData()]);
+            $mapperEntityBuilder->doBuild();
+            /**
+             * Mapper entity instance.
+             *
+             * @var \Bridge\Components\Exporter\TableEntity $mapperEntity
+             */
+            $mapperEntity = $mapperEntityBuilder->getEntity($entityName);
+            $mapperEntity->setConstraintEntityObject($this->getSourceEntityObject()->getConstraintEntityObject());
+            $this->ResultEntity = $mapperEntity;
         }
     }
 
@@ -123,20 +137,22 @@ class DataMapper implements \Bridge\Components\Exporter\Contracts\MapperInterfac
      */
     public function getMappedData(array $fieldFilters = [])
     {
-        $mappedData = $this->Result;
-        if (count($fieldFilters) > 0) {
-            foreach ($mappedData as $rowNumber => $rowData) {
-                # Get all field keys for each row.
-                $fieldNames = array_keys($rowData);
-                foreach ($fieldNames as $fieldName) {
-                    # Filter the field.
-                    if (in_array($fieldName, $fieldFilters, true) === false) {
-                        unset($mappedData[$rowNumber][$fieldName]);
-                    }
-                }
-            }
+        $resultMapper = $this->getResultEntityObject();
+        $mappedData = [];
+        if ($resultMapper !== null) {
+            $mappedData = $resultMapper->getData($fieldFilters);
         }
         return $mappedData;
+    }
+
+    /**
+     * Get result entity object as the mapper result.
+     *
+     * @return \Bridge\Components\Exporter\Contracts\TableEntityInterface
+     */
+    public function getResultEntityObject()
+    {
+        return $this->ResultEntity;
     }
 
     /**
@@ -233,11 +249,11 @@ class DataMapper implements \Bridge\Components\Exporter\Contracts\MapperInterfac
         # Get field mapper data.
         $fieldMapperData = $this->getFieldMapperData();
         # Check if all the keys on field mapper data are exist on the source entity.
-        if (count(array_diff_key($fieldMapperData, $this->getSourceEntityObject()->getFields())) !== 0) {
+        if (count(array_diff($fieldMapperData, array_keys($this->getSourceEntityObject()->getFields()))) !== 0) {
             throw new \Bridge\Components\Exporter\ExporterException('Some field mapper not found on source entity');
         }
         # Check if all the keys on field mapper data are exist on the target entity.
-        if (count(array_diff($fieldMapperData, array_keys($this->getTargetEntityObject()->getFields()))) !== 0) {
+        if (count(array_diff_key($fieldMapperData, $this->getTargetEntityObject()->getFields())) !== 0) {
             throw new \Bridge\Components\Exporter\ExporterException('Some field mapper not found on target entity');
         }
         # Return true if field mapper data is valid.

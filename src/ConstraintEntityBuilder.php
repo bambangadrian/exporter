@@ -144,10 +144,10 @@ class ConstraintEntityBuilder extends \Bridge\Components\Exporter\AbstractEntity
     public function getEntity($entityName)
     {
         $entity = parent::getEntity($entityName);
-        if ($entity instanceof \Bridge\Components\Exporter\Contracts\ConstraintEntityInterface === false) {
-            throw new \Bridge\Components\Exporter\ExporterException('Invalid table entity object format');
+        if ($entity instanceof \Bridge\Components\Exporter\Contracts\ConstraintEntityInterface) {
+            return $entity;
         }
-        return $entity;
+        throw new \Bridge\Components\Exporter\ExporterException('Invalid constraint entity object format');
     }
 
     /**

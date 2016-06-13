@@ -76,19 +76,21 @@ $entityTargetBuilder->doBuild();
 $entityTargetObject = $entityTargetBuilder->getEntity('hrd_bank');
 # -------------------------------------------------------------------------------------------------------------
 # Create the mapper instance.
-$mapperObject = new \Bridge\Components\Exporter\DataMapper();
+$mapperObject = new \Bridge\Components\Exporter\EntityMapper();
 # Set the source entity instance.
 $mapperObject->setSourceEntity($entitySourceObject);
 # Set the target entity instance that will be mapped.
 $mapperObject->setTargetEntity($entityTargetObject);
 # Set the field mapper data between source and target entity.
 $fieldMapperData = [
-    'bank_code' => 'Code',
-    'bank_name' => 'Name'
+    'Code' => 'bank_code',
+    'Name' => 'bank_name'
 ];
 $mapperObject->setFieldMapperData($fieldMapperData);
 # Run the mapper procedure.
 $mapperObject->doMapping();
-# Get the mapper result.
-$mapperResult = $mapperObject->getMappedData();
-debug($mapperResult);
+# Get the data mapper result.
+$dataMapperResult = $mapperObject->getMappedData();
+$mapperResultEntity = $mapperObject->getResultEntityObject();
+//debug($mapperObject->getResultEntityObject());
+//debug($dataMapperResult);

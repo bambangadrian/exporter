@@ -20,7 +20,9 @@ $connectionConfig = [
 $dbHandler = new \Bridge\Components\Exporter\Database\PostgreSqlHandler($connectionConfig);
 //$dbHandler->executeQuery('insert into "hrd_bank" (bank_code, bank_name) VALUES (\'test\', \'test\')');
 $dbDataSource = new \Bridge\Components\Exporter\DbDataSource($dbHandler);
+//debug($dbDataSource);
 $dbDataSource->setLoadedEntities(['hrd_bank']);
+//debug($dbDataSource->getLoadedEntities());
 # Create the entity target builder object.
 $dbEntityBuilder = new \Bridge\Components\Exporter\TableEntityBuilder(
     $dbDataSource,
@@ -28,10 +30,10 @@ $dbEntityBuilder = new \Bridge\Components\Exporter\TableEntityBuilder(
 );
 # Build the target entities.
 $dbEntityBuilder->doBuild();
+//debug($dbHandler->getTables());
 //debug($dbEntityBuilder->getEntities());
 # Get specific table entity instance.
 $dbEntity = $dbEntityBuilder->getEntity('hrd_bank');
-$dbEntity->doInsertRow(['bank_code' => 'test']);
-$dbEntity->doUpdateRow(['bank_code' => 'BRA'], ['id' => 35]);
-
-debug($dbEntity->getData());
+//$dbEntity->doInsertRow(['bank_code' => 'test']);
+//$dbEntity->doUpdateRow(['bank_code' => 'BRA'], ['id' => 35]);
+//debug($dbEntity->getData());

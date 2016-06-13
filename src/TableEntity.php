@@ -22,8 +22,16 @@ namespace Bridge\Components\Exporter;
  * @release    $Revision$
  */
 class TableEntity extends \Bridge\Components\Exporter\AbstractEntity implements
-    \Bridge\Components\Exporter\Contracts\TableEntityInterface
+    \Bridge\Components\Exporter\Contracts\TableEntityInterface,
+    \Bridge\Components\Exporter\Contracts\ExporterSubjectInterface
 {
+
+    /**
+     * The exporter observer instance collection.
+     *
+     * @var \Bridge\Components\Exporter\Contracts\ExporterObserverInterface[] $Observers
+     */
+    protected $Observers = [];
 
     /**
      * Constraint entity instance property.
@@ -52,6 +60,34 @@ class TableEntity extends \Bridge\Components\Exporter\AbstractEntity implements
     }
 
     /**
+     * Attach an observer.
+     *
+     * @param \Bridge\Components\Exporter\Contracts\ExporterObserverInterface $exporterObserver The observer parameter.
+     *
+     * @return void
+     */
+    public function attachObserver(\Bridge\Components\Exporter\Contracts\ExporterObserverInterface $exporterObserver)
+    {
+        if (in_array($exporterObserver, $this->Observers, true) === false) {
+            $this->Observers[] = $exporterObserver;
+        }
+    }
+
+    /**
+     * Detach an observer.
+     *
+     * @param \Bridge\Components\Exporter\Contracts\ExporterObserverInterface $exporterObserver The observer parameter.
+     *
+     * @return void
+     */
+    public function detachObserver(\Bridge\Components\Exporter\Contracts\ExporterObserverInterface $exporterObserver)
+    {
+        if (($observerIndex = array_search($exporterObserver, $this->getAllObservers(), true)) !== false) {
+            unset($this->Observers[$observerIndex]);
+        }
+    }
+
+    /**
      * Delete the selected table entity record row.
      *
      * @param array $conditions Condition to select the specific row.
@@ -69,6 +105,23 @@ class TableEntity extends \Bridge\Components\Exporter\AbstractEntity implements
     }
 
     /**
+     * Do import entity.
+     *
+     * @param \Bridge\Components\Exporter\Contracts\TableEntityInterface $exportedEntity Exported entity parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If invalid exported entity data structure found.
+     *
+     * @return void
+     */
+    public function doImport(\Bridge\Components\Exporter\Contracts\TableEntityInterface $exportedEntity)
+    {
+        $entityHandler = $this->getDataSourceObject()->getDataSourceHandler();
+        $exportedData = $entityHandler->getFormattedImportData($exportedEntity->getData());
+        //$entityHandler->
+        $this->doNotifyToAllObserver();
+    }
+
+    /**
      * Insert new table entity record row from data collection.
      *
      * @param array $data Data that will be inserted.
@@ -79,6 +132,19 @@ class TableEntity extends \Bridge\Components\Exporter\AbstractEntity implements
     {
         $fields = array_keys($this->getFields());
         $this->Data[] = array_merge(array_fill_keys($fields, null), $data);
+    }
+
+    /**
+     * Notify all the observers that has been registered.
+     *
+     * @return void
+     */
+    public function doNotifyToAllObserver()
+    {
+        $observerObjCollection = $this->getAllObservers();
+        foreach ($observerObjCollection as $observer) {
+            $observer->update($this);
+        }
     }
 
     /**
@@ -102,6 +168,16 @@ class TableEntity extends \Bridge\Components\Exporter\AbstractEntity implements
     }
 
     /**
+     * Get all observers that has been assigned to the exporter subject instance.
+     *
+     * @return \Bridge\Components\Exporter\Contracts\ExporterObserverInterface[]
+     */
+    public function getAllObservers()
+    {
+        return $this->Observers;
+    }
+
+    /**
      * Get the constraint entity object as the table entity constraint data property.
      *
      * @return \Bridge\Components\Exporter\Contracts\ConstraintEntityInterface
@@ -119,6 +195,21 @@ class TableEntity extends \Bridge\Components\Exporter\AbstractEntity implements
     public function hasConstraint()
     {
         return ($this->getConstraintEntityObject() !== null);
+    }
+
+    /**
+     * Set the constraint entity object property.
+     *
+     * @param \Bridge\Components\Exporter\Contracts\ConstraintEntityInterface|null $constraintEntityObj Constraint
+     *                                                                                                  entity object
+     *                                                                                                  parameter.
+     *
+     * @return void
+     */
+    public function setConstraintEntityObject(
+        \Bridge\Components\Exporter\Contracts\ConstraintEntityInterface $constraintEntityObj = null
+    ) {
+        $this->ConstraintEntity = $constraintEntityObj;
     }
 
     /**
@@ -156,20 +247,5 @@ class TableEntity extends \Bridge\Components\Exporter\AbstractEntity implements
             }
         }
         return $rowIndexes;
-    }
-
-    /**
-     * Set the constraint entity object property.
-     *
-     * @param \Bridge\Components\Exporter\Contracts\ConstraintEntityInterface|null $constraintEntityObj Constraint
-     *                                                                                                  entity object
-     *                                                                                                  parameter.
-     *
-     * @return void
-     */
-    protected function setConstraintEntityObject(
-        \Bridge\Components\Exporter\Contracts\ConstraintEntityInterface $constraintEntityObj = null
-    ) {
-        $this->ConstraintEntity = $constraintEntityObj;
     }
 }

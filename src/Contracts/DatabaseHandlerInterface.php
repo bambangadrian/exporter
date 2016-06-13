@@ -21,7 +21,7 @@ namespace Bridge\Components\Exporter\Contracts;
  * @copyright  2016 -
  * @release    $Revision$
  */
-interface DatabaseHandlerInterface
+interface DatabaseHandlerInterface extends \Bridge\Components\Exporter\Contracts\DataSourceHandlerInterface
 {
 
     /**

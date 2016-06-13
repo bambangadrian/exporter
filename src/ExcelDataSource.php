@@ -76,12 +76,8 @@ class ExcelDataSource extends \Bridge\Components\Exporter\AbstractDataSource
      */
     public function doLoad()
     {
-        # Set the default field read filter if no given.
-        if ($this->getFieldReadFilter() === null) {
-            $this->setFieldReadFilter(1);
-        }
-        $this->getExcelFileObject()->setLoadedSheets($this->getLoadedEntities());
-        $this->getExcelFileObject()->doRead();
+        # Start read the excel file.
+        $this->getExcelFileObject()->doRead(null, $this->getLoadedEntities());
         $excelFileDataArr = $this->getExcelFileObject()->getData();
         if (array_key_exists('worksheets', $excelFileDataArr) === true) {
             $worksheetData = $excelFileDataArr['worksheets'];
@@ -103,7 +99,7 @@ class ExcelDataSource extends \Bridge\Components\Exporter\AbstractDataSource
                             $columnName = $fields[$sheetName][$columnNumber];
                             $data[$sheetName][$rowNumber][$columnName] = $cell;
                         }
-                        if ($rowNumber === $this->FieldReadFilter->getStartRow() and $cell !== null) {
+                        if ($rowNumber === $this->getFieldReadFilter()->getStartRow() and $cell !== null) {
                             $fields[$sheetName][$columnNumber] = $cell;
                         }
                     }
@@ -112,6 +108,16 @@ class ExcelDataSource extends \Bridge\Components\Exporter\AbstractDataSource
         }
         $this->setFields($fields);
         $this->setData($data);
+    }
+
+    /**
+     * Get data source handler instance.
+     *
+     * @return \Bridge\Components\Exporter\Contracts\DataSourceHandlerInterface
+     */
+    public function getDataSourceHandler()
+    {
+        return $this->getExcelFileObject();
     }
 
     /**
@@ -148,10 +154,16 @@ class ExcelDataSource extends \Bridge\Components\Exporter\AbstractDataSource
     /**
      * Get field read filter object.
      *
+     * @throws \Bridge\Components\Exporter\ExporterException If multiple number of row that given.
+     *
      * @return \Bridge\Components\Exporter\ExcelEntityFieldsReadFilter
      */
     protected function getFieldReadFilter()
     {
+        # Set the default field read filter if no given.
+        if ($this->FieldReadFilter === null) {
+            $this->setFieldReadFilter(1);
+        }
         return $this->FieldReadFilter;
     }
 

@@ -66,7 +66,8 @@ abstract class AbstractEntityBuilder implements \Bridge\Components\Exporter\Cont
      */
     protected static $ValidDataSource = [
         'excel'    => '\Bridge\Components\Exporter\ExcelDataSource',
-        'database' => '\Bridge\Components\Exporter\DbDataSource'
+        'database' => '\Bridge\Components\Exporter\DbDataSource',
+        'array'    => '\Bridge\Components\Exporter\ArrayDataSource'
     ];
 
     /**

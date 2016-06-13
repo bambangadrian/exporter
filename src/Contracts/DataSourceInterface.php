@@ -41,6 +41,13 @@ interface DataSourceInterface
     public function getData(array $entityFilter = []);
 
     /**
+     * Get data source handler instance.
+     *
+     * @return \Bridge\Components\Exporter\Contracts\DataSourceHandlerInterface
+     */
+    public function getDataSourceHandler();
+
+    /**
      * Get field lists from data source.
      *
      * @param string $entityName Selected entity name that will be fetch the field column list.

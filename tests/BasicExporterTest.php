@@ -13,11 +13,7 @@
 include_once 'DataMapperTest.php';
 include_once 'DbDataSourceTest.php';
 # Mock-up for run the exporter process.
-$exporter = new \Bridge\Components\Exporter\BasicExporter();
-$exporter->setExportedData($mapperResult);
-# Mock-up for exporter process.
-debug($dbEntity);
-$exporter->setTargetEntity($dbEntity);
+$exporter = new \Bridge\Components\Exporter\BasicExporter($mapperResultEntity, $dbEntity);
 $exporter->doExport();
 debug($exporter->getStatus());
 debug($exporter->getLog());

@@ -24,7 +24,7 @@ namespace Bridge\Components\Exporter;
 abstract class AbstractExcelFile implements
     \Bridge\Components\Exporter\Contracts\ExcelReaderInterface,
     \Bridge\Components\Exporter\Contracts\ExcelWriterInterface,
-    \Bridge\Components\Exporter\Contracts\ExporterHandlerInterface
+    \Bridge\Components\Exporter\Contracts\DataSourceHandlerInterface
 {
 
     /**
@@ -105,7 +105,7 @@ abstract class AbstractExcelFile implements
     protected $Writer;
 
     /**
-     * Excel writer data options property
+     * Excel writer data options property.
      *
      * @var array $WriterOptions
      */
@@ -261,13 +261,13 @@ abstract class AbstractExcelFile implements
             );
         }
         $workSheetIterator = $this->getPhpExcelObject()->getWorksheetIterator();
-        $gridData = [];
         $loadedSheet = array_map(
             function ($val) {
                 return strtolower($val);
             },
             $this->getLoadedSheet()
         );
+        $gridData = [];
         foreach ($workSheetIterator as $worksheet) {
             $worksheetTitle = $worksheet->getTitle();
             if (count($loadedSheet) > 0 and in_array(strtolower($worksheetTitle), $loadedSheet, true) === false) {
@@ -386,6 +386,22 @@ abstract class AbstractExcelFile implements
     public function getFilePath()
     {
         return $this->FilePath;
+    }
+
+    /**
+     * Do mass import to data source.
+     *
+     * @param array $data Data collection that will be imported.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If invalid exported data structure found.
+     *
+     * @return array
+     */
+    public function getFormattedImportData(array $data)
+    {
+        # Validate the imported data.
+        # Format the array data based on the handler requirement.
+        return $data;
     }
 
     /**
@@ -585,6 +601,7 @@ abstract class AbstractExcelFile implements
         if ($objReader instanceof \PHPExcel_Reader_Abstract) {
             $objReader->setReadDataOnly(true);
         }
+        # Only load the loaded sheet property that has been set (optimizing memory).
         if (count($this->getLoadedSheet()) === 0) {
             $objReader->setLoadAllSheets();
         } else {

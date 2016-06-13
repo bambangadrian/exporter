@@ -25,18 +25,18 @@ class BasicExporter implements \Bridge\Components\Exporter\Contracts\ExporterInt
 {
 
     /**
+     * Exported Source data array property.
+     *
+     * @var \Bridge\Components\Exporter\Contracts\TableEntityInterface $ExportedEntity
+     */
+    private $ExportedEntity;
+
+    /**
      * Exporter log data property.
      *
      * @var array $Log
      */
-    protected $Log;
-
-    /**
-     * Exported Source data array property.
-     *
-     * @var array $ExportedData
-     */
-    private $ExportedData;
+    private $Log;
 
     /**
      * Exporter status property.
@@ -62,23 +62,24 @@ class BasicExporter implements \Bridge\Components\Exporter\Contracts\ExporterInt
     /**
      * BasicExporter constructor.
      *
-     * @param array                                                      $exportedData    Exported data array parameter.
-     * @param \Bridge\Components\Exporter\Contracts\TableEntityInterface $targetEntityObj Data target object parameter.
+     * @param \Bridge\Components\Exporter\Contracts\TableEntityInterface $exportedEntityObj Exported data array
+     *                                                                                      parameter.
+     * @param \Bridge\Components\Exporter\Contracts\TableEntityInterface $targetEntityObj   Data target object
+     *                                                                                      parameter.
      */
     public function __construct(
-        array $exportedData = [],
-        \Bridge\Components\Exporter\Contracts\TableEntityInterface $targetEntityObj = null
+        \Bridge\Components\Exporter\Contracts\TableEntityInterface $exportedEntityObj,
+        \Bridge\Components\Exporter\Contracts\TableEntityInterface $targetEntityObj
     ) {
-        $this->setExportedData($exportedData);
-        if ($targetEntityObj !== null) {
-            $this->setTargetEntity($targetEntityObj);
-        }
+        $this->setExportedEntity($exportedEntityObj);
+        $this->setTargetEntity($targetEntityObj);
     }
 
     /**
      * Do export the source data to target.
      *
      * @throws \Bridge\Components\Exporter\ExporterException If target entity object still not assigned.
+     * @throws \Bridge\Components\Exporter\ExporterException If invalid exported entity data structure found.
      *
      * @return void
      */
@@ -87,31 +88,26 @@ class BasicExporter implements \Bridge\Components\Exporter\Contracts\ExporterInt
         if ($this->getTargetEntityObject() === null) {
             throw new \Bridge\Components\Exporter\ExporterException('Please assign the target object to the exporter');
         }
-        $exportedData = $this->getExportedData();
-        foreach ($exportedData as $row) {
-            $this->getTargetEntityObject()->doInsertRow($row);
+        # Format target entity as subject interface and table entity interface instance on the same time.
+        $targetEntityObj = $this->getTargetEntityObject();
+        if ($targetEntityObj instanceof \Bridge\Components\Exporter\Contracts\ExporterSubjectInterface) {
+            # Attach exporter as observer to the called table entity.
+            $targetEntityObj->attachObserver($this);
+            # Start to import.
+            $targetEntityObj->doImport($this->getExportedEntityObject());
+        } else {
+            throw new \Bridge\Components\Exporter\ExporterException('Invalid exporter subject found');
         }
-        $this->getTargetEntityObject()->doSave();
     }
 
     /**
-     * Get exported data property
+     * Get exported entity instance.
      *
-     * @return array
+     * @return \Bridge\Components\Exporter\Contracts\TableEntityInterface
      */
-    public function getExportedData()
+    public function getExportedEntityObject()
     {
-        return $this->ExportedData;
-    }
-
-    /**
-     * Get exporter handler instance.
-     *
-     * @return \Bridge\Components\Exporter\Contracts\ExporterHandlerInterface
-     */
-    public function getExporterHandlerObject()
-    {
-        //return $this->getTargetEntityObject()->getDataSourceObject()
+        return $this->ExportedEntity;
     }
 
     /**
@@ -145,19 +141,19 @@ class BasicExporter implements \Bridge\Components\Exporter\Contracts\ExporterInt
     }
 
     /**
-     * Set exported data array as source.
+     * Set exporter exported entity instance property.
      *
-     * @param array $data Source data array parameter.
+     * @param \Bridge\Components\Exporter\Contracts\TableEntityInterface $exportedEntityObj Exported entity parameter.
      *
      * @return void
      */
-    public function setExportedData(array $data)
+    public function setExportedEntity(\Bridge\Components\Exporter\Contracts\TableEntityInterface $exportedEntityObj)
     {
-        $this->ExportedData = $data;
+        $this->ExportedEntity = $exportedEntityObj;
     }
 
     /**
-     * Set exporter target object property.
+     * Set exporter target instance property.
      *
      * @param \Bridge\Components\Exporter\Contracts\TableEntityInterface $targetEntityObj Target entity parameter.
      *
@@ -166,6 +162,31 @@ class BasicExporter implements \Bridge\Components\Exporter\Contracts\ExporterInt
     public function setTargetEntity(\Bridge\Components\Exporter\Contracts\TableEntityInterface $targetEntityObj)
     {
         $this->TargetEntity = $targetEntityObj;
+    }
+
+    /**
+     * Receive update from subject.
+     *
+     * @param \Bridge\Components\Exporter\Contracts\ExporterSubjectInterface $exporterSubject The Subject that
+     *                                                                                        notifying the observer of
+     *                                                                                        an update.
+     *
+     * @return void
+     */
+    public function update(\Bridge\Components\Exporter\Contracts\ExporterSubjectInterface $exporterSubject)
+    {
+        /**
+         * Format the exporter subject as table entity.
+         *
+         * @var \Bridge\Components\Exporter\Contracts\TableEntityInterface $exporterSubject
+         */
+        $this->addLog(
+            [
+                'message' => $exporterSubject->getName(),
+                'time'    => '',
+                'code'    => \Bridge\Components\Exporter\Contracts\ExporterInterface::STATE_SUCCESS
+            ]
+        );
     }
 
     /**

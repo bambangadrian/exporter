@@ -17,6 +17,6 @@ $excelFile = new \Bridge\Components\Exporter\BasicExcelFile('../resources/files/
 $excelFile->setLoadedSheets(['hrd_company']);
 $fieldFilter = new \Bridge\Components\Exporter\ExcelEntityFieldsReadFilter(1, range('A', 'D'), 'hrd_company');
 $rowFilter = new \Bridge\Components\Exporter\ExcelEntityRecordReadFilter($fieldFilter);
-$excelFile->doRead($fieldFilter);
+$excelFile->doRead($rowFilter);
 $excelArrayContents = $excelFile->getData();
 debug($excelArrayContents);

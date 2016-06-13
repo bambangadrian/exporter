@@ -78,13 +78,28 @@ abstract class AbstractEntity implements \Bridge\Components\Exporter\Contracts\E
     }
 
     /**
-     * Get entity data property.
+     * Get table entity data property.
+     *
+     * @param array $fieldFilters Field filters data that will be retrieved from the entity data.
      *
      * @return array
      */
-    public function getData()
+    public function getData(array $fieldFilters = [])
     {
-        return $this->Data;
+        $entityData = $this->Data;
+        if (count($fieldFilters) > 0) {
+            foreach ($entityData as $rowNumber => $rowData) {
+                # Get all field keys for each row.
+                $fieldNames = array_keys($rowData);
+                foreach ($fieldNames as $fieldName) {
+                    # Filter the field.
+                    if (in_array($fieldName, $fieldFilters, true) === false) {
+                        unset($entityData[$rowNumber][$fieldName]);
+                    }
+                }
+            }
+        }
+        return $entityData;
     }
 
     /**

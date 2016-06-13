@@ -13,7 +13,7 @@
 namespace Bridge\Components\Exporter\Contracts;
 
 /**
- * ExporterHandlerInterface class description.
+ * DataSourceHandlerInterface class description.
  *
  * @package    Components
  * @subpackage Exporter\Contracts
@@ -21,7 +21,7 @@ namespace Bridge\Components\Exporter\Contracts;
  * @copyright  2016 -
  * @release    $Revision$
  */
-interface ExporterHandlerInterface
+interface DataSourceHandlerInterface
 {
 
     /**
@@ -29,7 +29,9 @@ interface ExporterHandlerInterface
      *
      * @param array $data Data collection that will be imported.
      *
-     * @return void
+     * @throws \Bridge\Components\Exporter\ExporterException If invalid exported data structure found.
+     *
+     * @return array
      */
-    public function doMassImport(array $data);
+    public function getFormattedImportData(array $data);
 }

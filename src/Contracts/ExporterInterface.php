@@ -21,7 +21,7 @@ namespace Bridge\Components\Exporter\Contracts;
  * @copyright  2016 -
  * @release    $Revision$
  */
-interface ExporterInterface
+interface ExporterInterface extends \Bridge\Components\Exporter\Contracts\ExporterObserverInterface
 {
 
     /**
@@ -53,11 +53,11 @@ interface ExporterInterface
     public function doExport();
 
     /**
-     * Get exporter handler instance.
+     * Get exported entity instance.
      *
-     * @return \Bridge\Components\Exporter\Contracts\ExporterHandlerInterface
+     * @return \Bridge\Components\Exporter\Contracts\TableEntityInterface
      */
-    public function getExporterHandlerObject();
+    public function getExportedEntityObject();
 
     /**
      * Get log data property.
@@ -72,4 +72,11 @@ interface ExporterInterface
      * @return self::STATE_ERROR|self::STATE_FAILED|self::STATE_SUCCESS
      */
     public function getStatus();
+
+    /**
+     * Get exporter target entity instance property.
+     *
+     * @return \Bridge\Components\Exporter\Contracts\TableEntityInterface
+     */
+    public function getTargetEntityObject();
 }

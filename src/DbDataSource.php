@@ -85,6 +85,16 @@ class DbDataSource extends \Bridge\Components\Exporter\AbstractDataSource
     }
 
     /**
+     * Get data source handler instance.
+     *
+     * @return \Bridge\Components\Exporter\Contracts\DataSourceHandlerInterface
+     */
+    public function getDataSourceHandler()
+    {
+        return $this->getDatabaseHandlerObject();
+    }
+
+    /**
      * Get database handler object.
      *
      * @return \Bridge\Components\Exporter\Contracts\DatabaseHandlerInterface
