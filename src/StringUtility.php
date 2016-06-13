@@ -25,6 +25,13 @@ class StringUtility
 {
 
     /**
+     * Special char collection data property.
+     *
+     * @var array $SpecialChar
+     */
+    private static $SpecialChar = ['~', '!', '@', '#', '$', '%', '^', '&', '*'];
+
+    /**
      * Get the string length.
      *
      * @param string $str String data parameter.
@@ -45,7 +52,7 @@ class StringUtility
      */
     public static function replaceAccent($str)
     {
-        $a = [
+        $accentCollection = [
             'À',
             'Á',
             'Â',
@@ -258,7 +265,7 @@ class StringUtility
             'Ǿ',
             'ǿ'
         ];
-        $b = [
+        $accentReplacer = [
             'A',
             'A',
             'A',
@@ -471,7 +478,7 @@ class StringUtility
             'O',
             'o'
         ];
-        return str_replace($a, $b, $str);
+        return str_replace($accentCollection, $accentReplacer, $str);
     }
 
     /**
@@ -484,13 +491,14 @@ class StringUtility
     public static function toCamelCase($str)
     {
         # Sample: Bambang Adrian Sitompul : bambangAdrianSitompul
-        $arrString = explode(' ', strtolower($str));
-        $resString[] = $arrString[0];
-        $count = count($arrString);
-        for ($i = 1; $i < $count; $i++) {
-            $resString[] = ucfirst($arrString[$i]);
-        }
-        return implode('', $resString);
+        $arrStr = explode(' ', static::toUriFriendly($str, ' '));
+        array_walk(
+            $arrStr,
+            function (&$value, $key) {
+                $value = ($key === 0) ? strtolower($value) : ucfirst($value);
+            }
+        );
+        return implode('', $arrStr);
     }
 
     /**
@@ -523,7 +531,7 @@ class StringUtility
     public static function toPascalCase($str)
     {
         # Sample: Bambang Adrian Sitompul : BambangAdrianSitompul
-        return str_replace(' ', '', ucwords(strtolower($str)));
+        return str_replace(' ', '', ucwords(static::toUriFriendly($str, ' ')));
     }
 
     /**
@@ -536,28 +544,29 @@ class StringUtility
     public static function toUnderScoreCase($str)
     {
         # Sample: Bambang Adrian Sitompul : bambang_adrian_sitompul
-        return str_replace(' ', '_', ltrim(rtrim(strtolower($str))));
+        return static::toUriFriendly($str, '_');
     }
 
     /**
      * Convert the given string to url friendly format.
      *
      * @param string $str       String data parameter.
-     * @param array  $replace   Array of data that will be used for replace the character on the given string.
      * @param string $delimiter The delimiter that will used to replace the special character.
+     * @param array  $replace   Array of data that will be used for replace the character on the given string.
      *
      * @return string
      */
-    public static function toUriFriendly($str, array $replace = [], $delimiter = '-')
+    public static function toUriFriendly($str, $delimiter = '-', array $replace = [])
     {
-        if (count($replace) !== 0) {
-            $str = str_replace((array)$replace, ' ', $str);
+        # Set default replaced character if not defined yet.
+        if ($replace === null or count($replace) === 0) {
+            $replace = static::$SpecialChar;
         }
+        $str = str_replace((array)$replace, ' ', $str);
         $clean = static::replaceAccent($str);
         $clean = iconv('UTF-8', 'ASCII//TRANSLIT', $clean);
         $clean = preg_replace("/[^a-zA-Z0-9\/_|+ -]/", '', $clean);
-        $clean = strtolower(trim($clean, '-'));
-        $clean = preg_replace("/[\/_|+ -]+/", $delimiter, $clean);
+        $clean = strtolower(trim(preg_replace("/[\/_|+ -]+/", $delimiter, $clean), $delimiter));
         return $clean;
     }
 }
