@@ -1,0 +1,49 @@
+{
+    "name"             : "devosa/exporter",
+    "description"      : "Master/Employee Data Excel Dynamic Exporter",
+    "keywords"         : [
+        "exporter",
+        "excel"
+    ],
+    "type"             : "project",
+    "homepage"         : "http://www.invosa.com",
+    "minimum-stability": "stable",
+    "prefer-stable"    : true,
+    "license"          : "proprietary",
+    "version"          : "1.0.0",
+    "support"          : {
+        "issues": "http://192.168.1.254/redmine/projects/exporter-utility-system/issues",
+        "source": "http://192.168.1.254:8000/devosa/exporter-utility/tree/master"
+    },
+    "repositories"     : [
+        {
+            "type": "vcs",
+            "url" : "http://192.168.1.254:8000/devosa/exporter-utility.git"
+        }
+    ],
+    "authors"          : [
+        {
+            "name" : "Bambang Adrian Sitompul",
+            "email": "bambang@invosa.com",
+            "role" : "Full Stack Developer"
+        }
+    ],
+    "autoload"         : {
+        "psr-4": {
+            "Bridge\\Components\\Exporter\\": "src/"
+        }
+    },
+    "require"          : {
+        "php"               : "~5.6.16",
+        "phpoffice/phpexcel": "~1.8.1",
+        "doctrine/dbal"     : "~2.5.4"
+    },
+    "require-dev"      : {
+        "squizlabs/php_codesniffer": "2.5.1",
+        "phpmd/phpmd"              : "2.4.2"
+    },
+    "config"           : {
+        "secure-http"        : false,
+        "optimize-autoloader": true
+    }
+}
