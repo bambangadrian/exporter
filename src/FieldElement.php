@@ -25,6 +25,13 @@ class FieldElement implements \Bridge\Components\Exporter\Contracts\FieldElement
 {
 
     /**
+     * Auto increment state property.
+     *
+     * @var boolean
+     */
+    private $AutoIncrement = false;
+
+    /**
      * Constraint data array property.
      *
      * @var array $Constraints
@@ -79,10 +86,11 @@ class FieldElement implements \Bridge\Components\Exporter\Contracts\FieldElement
      * @var array $ValidFieldConstraints
      */
     protected static $ValidFieldConstraints = [
-        'primaryKey'    => 'setAsPrimary',
+        'primaryKey'    => 'setAsPrimaryKey',
         'fieldTypeData' => 'setFieldTypeData',
         'required'      => 'setRequired',
-        'foreignKey'    => 'setDependency'
+        'foreignKey'    => 'setDependency',
+        'autoIncrement' => 'setAutoIncrement'
     ];
 
     /**
@@ -191,6 +199,16 @@ class FieldElement implements \Bridge\Components\Exporter\Contracts\FieldElement
     }
 
     /**
+     * Get auto increment state property
+     *
+     * @return boolean
+     */
+    public function isAutoIncrement()
+    {
+        return $this->AutoIncrement;
+    }
+
+    /**
      * Get primary key state property.
      *
      * @return boolean
@@ -221,6 +239,19 @@ class FieldElement implements \Bridge\Components\Exporter\Contracts\FieldElement
     {
         $this->Constraints['primaryKey'] = (boolean)$isPrimaryKey;
         $this->PrimaryKey = (boolean)$isPrimaryKey;
+    }
+
+    /**
+     * Set field is a auto increment.
+     *
+     * @param boolean $isAutoIncrement Auto increment option parameter.
+     *
+     * @return void
+     */
+    public function setAutoIncrement($isAutoIncrement = true)
+    {
+        $this->Constraints['autoIncrement'] = (boolean)$isAutoIncrement;
+        $this->AutoIncrement = (boolean)$isAutoIncrement;
     }
 
     /**

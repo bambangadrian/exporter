@@ -133,6 +133,21 @@ abstract class AbstractDatabaseHandler implements \Bridge\Components\Exporter\Co
     }
 
     /**
+     * Add one row to the selected entity name on data source.
+     *
+     * @param array  $data       Complete array for one row to add.
+     * @param string $entityName Entity name parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If any error raised when adding/saving the row data.
+     *
+     * @return boolean
+     */
+    public function addImportedRow(array $data, $entityName = '')
+    {
+        return (boolean)$this->getDatabaseConnectionObject()->insert($entityName, $data);
+    }
+
+    /**
      * Fetch all data information from database.
      *
      * @param array $loadedTables Selected table collection data that want to be loaded.
@@ -299,19 +314,13 @@ abstract class AbstractDatabaseHandler implements \Bridge\Components\Exporter\Co
     }
 
     /**
-     * Do mass import to data source.
+     * Get handler name property.
      *
-     * @param array $data Data collection that will be imported.
-     *
-     * @throws \Bridge\Components\Exporter\ExporterException If invalid exported data structure found.
-     *
-     * @return array
+     * @return string
      */
-    public function getFormattedImportData(array $data)
+    public function getHandlerName()
     {
-        # Validate the imported data.
-        # Format the array data based on the handler requirement.
-        return $data;
+        return $this->getDatabaseDriver();
     }
 
     /**

@@ -33,5 +33,7 @@ interface ExporterObserverInterface
      *
      * @return void
      */
-    public function update(\Bridge\Components\Exporter\Contracts\ExporterSubjectInterface $exporterSubject);
+    public function doReceiveUpdateFromSubject(
+        \Bridge\Components\Exporter\Contracts\ExporterSubjectInterface $exporterSubject
+    );
 }

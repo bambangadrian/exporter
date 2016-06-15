@@ -36,7 +36,7 @@ class BasicExporter implements \Bridge\Components\Exporter\Contracts\ExporterInt
      *
      * @var array $Log
      */
-    private $Log;
+    private $Log = [];
 
     /**
      * Exporter status property.
@@ -79,7 +79,6 @@ class BasicExporter implements \Bridge\Components\Exporter\Contracts\ExporterInt
      * Do export the source data to target.
      *
      * @throws \Bridge\Components\Exporter\ExporterException If target entity object still not assigned.
-     * @throws \Bridge\Components\Exporter\ExporterException If invalid exported entity data structure found.
      *
      * @return void
      */
@@ -90,14 +89,35 @@ class BasicExporter implements \Bridge\Components\Exporter\Contracts\ExporterInt
         }
         # Format target entity as subject interface and table entity interface instance on the same time.
         $targetEntityObj = $this->getTargetEntityObject();
+        # Attach exporter as observer (as the caller class) to table entity.
         if ($targetEntityObj instanceof \Bridge\Components\Exporter\Contracts\ExporterSubjectInterface) {
-            # Attach exporter as observer to the called table entity.
             $targetEntityObj->attachObserver($this);
-            # Start to import.
-            $targetEntityObj->doImport($this->getExportedEntityObject());
-        } else {
-            throw new \Bridge\Components\Exporter\ExporterException('Invalid exporter subject found');
         }
+        # Start to import by using the target entity object registered method.
+        $targetEntityObj->doImport($this->getExportedEntityObject());
+    }
+
+    /**
+     * Receive update from subject.
+     *
+     * @param \Bridge\Components\Exporter\Contracts\ExporterSubjectInterface $exporterSubject The Subject that
+     *                                                                                        notifying the observer of
+     *                                                                                        an update.
+     *
+     * @return void
+     */
+    public function doReceiveUpdateFromSubject(
+        \Bridge\Components\Exporter\Contracts\ExporterSubjectInterface $exporterSubject
+    ) {
+        $this->addLog(
+            [
+                'message' => '[' . $exporterSubject->getEventName() . ']' .
+                    $exporterSubject->getSubjectName() . ': ' . $exporterSubject->getEventMessage(),
+                'time'    => time(),
+                'code'    => $exporterSubject->getEventState()
+            ]
+        );
+        $this->setStatus($exporterSubject->getEventState());
     }
 
     /**
@@ -118,6 +138,23 @@ class BasicExporter implements \Bridge\Components\Exporter\Contracts\ExporterInt
     public function getLog()
     {
         return $this->Log;
+    }
+
+    /**
+     * Get log data as string.
+     *
+     * @param string $delimiter The delimiter parameter that will be used to separate between log item.
+     *
+     * @return string
+     */
+    public function getLogString($delimiter = "\n")
+    {
+        $arrLog = $this->getLog();
+        $simpleLog = [];
+        foreach ($arrLog as $logItem) {
+            $simpleLog[] = $logItem['time'] . ': with code (' . $logItem['code'] . ') - ' . $logItem['message'];
+        }
+        return implode($delimiter, $simpleLog);
     }
 
     /**
@@ -162,31 +199,6 @@ class BasicExporter implements \Bridge\Components\Exporter\Contracts\ExporterInt
     public function setTargetEntity(\Bridge\Components\Exporter\Contracts\TableEntityInterface $targetEntityObj)
     {
         $this->TargetEntity = $targetEntityObj;
-    }
-
-    /**
-     * Receive update from subject.
-     *
-     * @param \Bridge\Components\Exporter\Contracts\ExporterSubjectInterface $exporterSubject The Subject that
-     *                                                                                        notifying the observer of
-     *                                                                                        an update.
-     *
-     * @return void
-     */
-    public function update(\Bridge\Components\Exporter\Contracts\ExporterSubjectInterface $exporterSubject)
-    {
-        /**
-         * Format the exporter subject as table entity.
-         *
-         * @var \Bridge\Components\Exporter\Contracts\TableEntityInterface $exporterSubject
-         */
-        $this->addLog(
-            [
-                'message' => $exporterSubject->getName(),
-                'time'    => '',
-                'code'    => \Bridge\Components\Exporter\Contracts\ExporterInterface::STATE_SUCCESS
-            ]
-        );
     }
 
     /**

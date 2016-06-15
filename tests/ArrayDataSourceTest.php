@@ -57,6 +57,7 @@ $data = [
     ]
 ];
 $arrayDataSource = new \Bridge\Components\Exporter\ArrayDataSource($data);
+debug($arrayDataSource->getDataSourceHandler(), true);
 //$arrayDataSource->setLoadedEntities(['test2']);
 //$arrayDataSource->doLoad();
 //debug($arrayDataSource->getData());

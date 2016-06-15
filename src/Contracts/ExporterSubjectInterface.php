@@ -55,4 +55,32 @@ interface ExporterSubjectInterface
      * @return \Bridge\Components\Exporter\Contracts\ExporterObserverInterface[]
      */
     public function getAllObservers();
+
+    /**
+     * Get message state property.
+     *
+     * @return string
+     */
+    public function getEventMessage();
+
+    /**
+     * Get event name property.
+     *
+     * @return string
+     */
+    public function getEventName();
+
+    /**
+     * Get event state property.
+     *
+     * @return integer
+     */
+    public function getEventState();
+
+    /**
+     * Get exporter subject name property.
+     *
+     * @return string
+     */
+    public function getSubjectName();
 }

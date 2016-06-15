@@ -41,6 +41,27 @@ class TableEntity extends \Bridge\Components\Exporter\AbstractEntity implements
     private $ConstraintEntity;
 
     /**
+     * Message state property.
+     *
+     * @var string $EventMessage
+     */
+    private $EventMessage;
+
+    /**
+     * Event name property.
+     *
+     * @var string $EventName
+     */
+    private $EventName;
+
+    /**
+     * Event state property.
+     *
+     * @var integer $EventState
+     */
+    private $EventState;
+
+    /**
      * TableEntity constructor.
      *
      * @param string                              $entityName          Entity name parameter.
@@ -115,10 +136,42 @@ class TableEntity extends \Bridge\Components\Exporter\AbstractEntity implements
      */
     public function doImport(\Bridge\Components\Exporter\Contracts\TableEntityInterface $exportedEntity)
     {
-        $entityHandler = $this->getDataSourceObject()->getDataSourceHandler();
-        $exportedData = $entityHandler->getFormattedImportData($exportedEntity->getData());
-        //$entityHandler->
-        $this->doNotifyToAllObserver();
+        $entityHandler = $this->getEntityHandler();
+        $exportedData = $exportedEntity->getData();
+        $this->setEventName('importEntity');
+        $targetColumns = $this->getFields();
+        foreach ($exportedData as $item) {
+            # Formatted the exported data so it will be automatically filled the empty column.
+            foreach ($targetColumns as $fieldObj) {
+                $fieldName = $fieldObj->getFieldName();
+                if (array_key_exists($fieldName, $item) === false and
+                    $fieldObj->isPrimaryKey() === false and
+                    $fieldObj->isAutoIncrement() === false
+                ) {
+                    $item[$fieldName] = null;
+                    if ($fieldObj->isRequired()) {
+                        $item[$fieldName] = $fieldObj->getFieldTypeObject()->getDefaultValue();
+                    }
+                }
+            }
+            $success = true;
+            if ($entityHandler->getHandlerName() !== 'array' and
+                $entityHandler->addImportedRow($item, $this->getName()) === false
+            ) {
+                $success = false;
+            }
+            if ($success === true) {
+                $this->doInsertRow($item);
+                $eventMessage = 'Inserting row data to table entity # ' . serialize($item);
+                $eventState = \Bridge\Components\Exporter\Contracts\ExporterInterface::STATE_SUCCESS;
+            } else {
+                $eventMessage = 'Failed to insert row data to table entity #' . serialize($item);
+                $eventState = \Bridge\Components\Exporter\Contracts\ExporterInterface::STATE_FAILED;
+            }
+            $this->setEventMessage($eventMessage);
+            $this->setEventState($eventState);
+            $this->doNotifyToAllObserver();
+        }
     }
 
     /**
@@ -143,7 +196,7 @@ class TableEntity extends \Bridge\Components\Exporter\AbstractEntity implements
     {
         $observerObjCollection = $this->getAllObservers();
         foreach ($observerObjCollection as $observer) {
-            $observer->update($this);
+            $observer->doReceiveUpdateFromSubject($this);
         }
     }
 
@@ -185,6 +238,46 @@ class TableEntity extends \Bridge\Components\Exporter\AbstractEntity implements
     public function getConstraintEntityObject()
     {
         return $this->ConstraintEntity;
+    }
+
+    /**
+     * Get message state property.
+     *
+     * @return string
+     */
+    public function getEventMessage()
+    {
+        return $this->EventMessage;
+    }
+
+    /**
+     * Get event name property.
+     *
+     * @return string
+     */
+    public function getEventName()
+    {
+        return $this->EventName;
+    }
+
+    /**
+     * Get event state property.
+     *
+     * @return integer
+     */
+    public function getEventState()
+    {
+        return $this->EventState;
+    }
+
+    /**
+     * Get exporter subject name property.
+     *
+     * @return string
+     */
+    public function getSubjectName()
+    {
+        return $this->getName();
     }
 
     /**
@@ -247,5 +340,41 @@ class TableEntity extends \Bridge\Components\Exporter\AbstractEntity implements
             }
         }
         return $rowIndexes;
+    }
+
+    /**
+     * Set message state property.
+     *
+     * @param string $message Message parameter.
+     *
+     * @return void
+     */
+    protected function setEventMessage($message)
+    {
+        $this->EventMessage = $message;
+    }
+
+    /**
+     * Set event name property.
+     *
+     * @param string $eventName Event name parameter.
+     *
+     * @return void
+     */
+    protected function setEventName($eventName)
+    {
+        $this->EventName = $eventName;
+    }
+
+    /**
+     * Set event state property.
+     *
+     * @param integer $eventState Event state parameter.
+     *
+     * @return void
+     */
+    protected function setEventState($eventState)
+    {
+        $this->EventState = $eventState;
     }
 }

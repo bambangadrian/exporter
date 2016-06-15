@@ -82,7 +82,7 @@ class ArrayDataSource extends \Bridge\Components\Exporter\AbstractDataSource
      */
     public function getDataSourceHandler()
     {
-        return null;
+        return new \Bridge\Components\Exporter\ArrayHandler($this->getData());
     }
 
     /**

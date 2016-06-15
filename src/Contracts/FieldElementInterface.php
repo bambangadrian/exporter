@@ -46,6 +46,13 @@ interface FieldElementInterface
     public function getFieldTypeObject();
 
     /**
+     * Get auto increment state property
+     *
+     * @return boolean
+     */
+    public function isAutoIncrement();
+
+    /**
      * Get primary key state property.
      *
      * @return boolean
@@ -53,7 +60,7 @@ interface FieldElementInterface
     public function isPrimaryKey();
 
     /**
-     * Get the field required constraint.
+     * Get required state property.
      *
      * @return boolean
      */

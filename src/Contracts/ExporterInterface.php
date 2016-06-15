@@ -67,6 +67,15 @@ interface ExporterInterface extends \Bridge\Components\Exporter\Contracts\Export
     public function getLog();
 
     /**
+     * Get log data as string.
+     *
+     * @param string $delimiter The delimiter parameter that will be used to separate between log item.
+     *
+     * @return string
+     */
+    public function getLogString($delimiter = "\n");
+
+    /**
      * Get exporter status.
      *
      * @return self::STATE_ERROR|self::STATE_FAILED|self::STATE_SUCCESS

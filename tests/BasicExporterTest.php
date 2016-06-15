@@ -15,5 +15,4 @@ include_once 'DbDataSourceTest.php';
 # Mock-up for run the exporter process.
 $exporter = new \Bridge\Components\Exporter\BasicExporter($mapperResultEntity, $dbEntity);
 $exporter->doExport();
-debug($exporter->getStatus());
-debug($exporter->getLog());
+echo $exporter->getLogString();

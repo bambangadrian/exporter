@@ -64,6 +64,16 @@ abstract class AbstractDataSourceDecorator implements \Bridge\Components\Exporte
     }
 
     /**
+     * Get data source handler instance.
+     *
+     * @return \Bridge\Components\Exporter\Contracts\DataSourceHandlerInterface
+     */
+    public function getDataSourceHandler()
+    {
+        return $this->DataSourceInstance->getDataSourceHandler();
+    }
+
+    /**
      * Get field lists from data source.
      *
      * @param string $entityName Selected entity name that will be fetch the field column list.

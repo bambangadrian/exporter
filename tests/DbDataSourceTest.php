@@ -22,6 +22,7 @@ $dbHandler = new \Bridge\Components\Exporter\Database\PostgreSqlHandler($connect
 $dbDataSource = new \Bridge\Components\Exporter\DbDataSource($dbHandler);
 //debug($dbDataSource);
 $dbDataSource->setLoadedEntities(['hrd_bank']);
+$dbDataSource->doLoad();
 //debug($dbDataSource->getLoadedEntities());
 # Create the entity target builder object.
 $dbEntityBuilder = new \Bridge\Components\Exporter\TableEntityBuilder(
@@ -30,10 +31,12 @@ $dbEntityBuilder = new \Bridge\Components\Exporter\TableEntityBuilder(
 );
 # Build the target entities.
 $dbEntityBuilder->doBuild();
+$x = $dbDataSource->getConstraintEntities();
 //debug($dbHandler->getTables());
 //debug($dbEntityBuilder->getEntities());
 # Get specific table entity instance.
 $dbEntity = $dbEntityBuilder->getEntity('hrd_bank');
+//$constraints = $dbEntity->getConstraintEntityObject();
 //$dbEntity->doInsertRow(['bank_code' => 'test']);
 //$dbEntity->doUpdateRow(['bank_code' => 'BRA'], ['id' => 35]);
 //debug($dbEntity->getData());

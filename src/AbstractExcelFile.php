@@ -389,22 +389,6 @@ abstract class AbstractExcelFile implements
     }
 
     /**
-     * Do mass import to data source.
-     *
-     * @param array $data Data collection that will be imported.
-     *
-     * @throws \Bridge\Components\Exporter\ExporterException If invalid exported data structure found.
-     *
-     * @return array
-     */
-    public function getFormattedImportData(array $data)
-    {
-        # Validate the imported data.
-        # Format the array data based on the handler requirement.
-        return $data;
-    }
-
-    /**
      * Get grid data property.
      *
      * @return array
@@ -412,6 +396,16 @@ abstract class AbstractExcelFile implements
     public function getGrid()
     {
         return $this->Grid;
+    }
+
+    /**
+     * Get handler name property.
+     *
+     * @return string
+     */
+    public function getHandlerName()
+    {
+        return 'phpExcel';
     }
 
     /**

@@ -41,7 +41,7 @@ abstract class AbstractEntity implements \Bridge\Components\Exporter\Contracts\E
     /**
      * Fields data property.
      *
-     * @var array $Fields
+     * @var \Bridge\Components\Exporter\Contracts\FieldElementInterface[] $Fields
      */
     protected $Fields;
 
@@ -113,6 +113,16 @@ abstract class AbstractEntity implements \Bridge\Components\Exporter\Contracts\E
     }
 
     /**
+     * Get entity handle instance.
+     *
+     * @return \Bridge\Components\Exporter\Contracts\DataSourceHandlerInterface
+     */
+    public function getEntityHandler()
+    {
+        return $this->getDataSourceObject()->getDataSourceHandler();
+    }
+
+    /**
      * Get selected field property.
      *
      * @param string $fieldName Field name parameter.
@@ -132,7 +142,7 @@ abstract class AbstractEntity implements \Bridge\Components\Exporter\Contracts\E
     /**
      * Get fields collection information.
      *
-     * @return array
+     * @return \Bridge\Components\Exporter\Contracts\FieldElementInterface[]
      */
     public function getFields()
     {

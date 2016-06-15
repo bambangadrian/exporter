@@ -10,19 +10,26 @@
  * @version   GIT: $Id$
  * @link      -
  */
-namespace Bridge\Components\Exporter\Contracts;
+namespace Bridge\Components\Exporter;
 
 /**
- * DataSourceHandlerInterface class description.
+ * ArrayHandler class description.
  *
  * @package    Components
- * @subpackage Exporter\Contracts
+ * @subpackage Exporter
  * @author     Bambang Adrian Sitompul <bambang.adrian@gmail.com>
  * @copyright  2016 -
  * @release    $Revision$
  */
-interface DataSourceHandlerInterface
+class ArrayHandler extends \ArrayObject implements \Bridge\Components\Exporter\Contracts\DataSourceHandlerInterface
 {
+
+    /**
+     * Data collection property.
+     *
+     * @var array $Data
+     */
+    private $Data;
 
     /**
      * Add one row to the selected entity name on data source.
@@ -34,12 +41,19 @@ interface DataSourceHandlerInterface
      *
      * @return boolean
      */
-    public function addImportedRow(array $data, $entityName = '');
+    public function addImportedRow(array $data, $entityName = '')
+    {
+        $this->Data[$entityName][] = $data;
+        return true;
+    }
 
     /**
      * Get handler name property.
      *
      * @return string
      */
-    public function getHandlerName();
+    public function getHandlerName()
+    {
+        return 'array';
+    }
 }

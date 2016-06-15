@@ -25,21 +25,42 @@ class BasicExcelFile extends \Bridge\Components\Exporter\AbstractExcelFile
 {
 
     /**
+     * Add one row to the selected entity name on data source.
+     *
+     * @param array  $data       Complete array for one row to add.
+     * @param string $entityName Entity name parameter.
+     *
+     * @throws \Bridge\Components\Exporter\ExporterException If any error raised when adding/saving the row data.
+     * @throws \PHPExcel_Reader_Exception If no search type found for the writer type.
+     * @throws \PHPExcel_Writer_Exception If fail to save the file to the location path.
+     * @throws \Bridge\Components\Exporter\ExporterException If failed to set mode or set reader and writer type.
+     *
+     * @return boolean
+     */
+    public function addImportedRow(array $data, $entityName = '')
+    {
+        # Format the imported data so it can be adding tho excel sheet row.
+        $this->addRow(['data' => array_values($data)], $entityName);
+        $this->doSave();
+        return true;
+    }
+
+    /**
      * Add one row to the excel file.
      *
-     * @param array  $row       Complete array for one row to add.
-     * @param string $sheetName Sheet name parameter.
-     * @param string $gridType  Grid type parameter.
+     * @param array  $data       Complete array for one row to add.
+     * @param string $entityName Sheet name parameter.
+     * @param string $gridType   Grid type parameter.
      *
      * @throws \Bridge\Components\Exporter\ExporterException If any error raised when adding row into the grid.
      *
      * @return void
      */
-    public function addRow(array $row, $sheetName = '', $gridType = 'contents')
+    public function addRow(array $data, $entityName = '', $gridType = 'contents')
     {
         try {
-            $nextGridRow = $this->getNextGridRow($sheetName, $gridType);
-            $this->Grid['worksheets'][$sheetName][$gridType][$nextGridRow] = $this->checkGridRows($row);
+            $nextGridRow = $this->getNextGridRow($entityName, $gridType);
+            $this->Grid['worksheets'][$entityName][$gridType][$nextGridRow] = $this->checkGridRows($data);
         } catch (\Exception $ex) {
             throw new \Bridge\Components\Exporter\ExporterException($ex->getMessage());
         }

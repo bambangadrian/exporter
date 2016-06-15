@@ -119,6 +119,14 @@ class DbDataSource extends \Bridge\Components\Exporter\AbstractDataSource
         $constraintEntities = [];
         # Fetch all the fields from table list.
         foreach ($tableList as $entityName) {
+            # Check and fetch all the primary keys on the selected table entity.
+            $tableObj = $dbSchemaHandler->listTableDetails($entityName);
+            $primaryKeyIndex = $tableObj->getPrimaryKey();
+            $primaryKeys = [];
+            if ($primaryKeyIndex !== null) {
+                $primaryKeys = $primaryKeyIndex->getColumns();
+            }
+            # Start to build the constraint entity.
             $constraintEntityObj = new \Bridge\Components\Exporter\ConstraintEntity($entityName, $this);
             $columnCollection = $dbSchemaHandler->listTableColumns(
                 $entityName,
@@ -126,12 +134,15 @@ class DbDataSource extends \Bridge\Components\Exporter\AbstractDataSource
             );
             foreach ($columnCollection as $columnObj) {
                 # Parse the field constraint from entity array.
+                $columnObj->getAutoincrement();
                 $constraints = [
                     'required'      => $columnObj->getNotnull(),
                     'fieldTypeData' => [
                         'type'   => $dbHandler->getMappedFieldType($columnObj->getType()->getName()),
                         'length' => $columnObj->getLength()
-                    ]
+                    ],
+                    'primaryKey'    => in_array($columnObj->getName(), $primaryKeys, true) === true,
+                    'autoIncrement' => $columnObj->getAutoincrement()
                 ];
                 # Create the field element object and assign the field element into the constraint entity.
                 $fieldObj = new \Bridge\Components\Exporter\FieldElement($columnObj->getName(), $constraints);
