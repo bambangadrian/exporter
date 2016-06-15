@@ -1,5 +1,7 @@
 # Introduction
 
+Library Package Name: Bridge Exporter Library Ver.1.0.0-dev-master@alpha
+
 # Components
 - Database Access: Doctrine DBAL
 - Excel Library: 
