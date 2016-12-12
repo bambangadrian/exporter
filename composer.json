@@ -1,6 +1,6 @@
 {
     "name"             : "devosa/exporter",
-    "description"      : "Master/Employee Data Excel Dynamic Exporter",
+    "description"      : "Basic dynamic data mapper and exporter between mssql, mysql, spreadsheet, and postgresql",
     "keywords"         : [
         "exporter",
         "excel"
